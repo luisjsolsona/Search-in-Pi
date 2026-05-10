@@ -270,6 +270,8 @@ footer b{color:#336644}
 .btn-expand:hover:not(:disabled),.btn-expand:active:not(:disabled){background:var(--b);color:#000}
 .btn-expand:disabled{opacity:.22;cursor:default}
 .btn-expand.expanding{border-color:var(--y);color:var(--y);animation:blink .7s ease-in-out infinite}
+.btn-expand-max{border-color:var(--r)!important;color:var(--r)!important}
+.btn-expand-max:hover:not(:disabled),.btn-expand-max:active:not(:disabled){background:var(--r)!important;color:#000!important}
 
 /* MODAL EXPANSIÓN */
 #modal-expand{
@@ -325,6 +327,9 @@ footer b{color:#336644}
   <div class="spill">
     <button class="btn-expand" id="btn-expand" onclick="expandPi()" title="Calcular 500.000 decimales más en el servidor" disabled>
       +500K
+    </button>
+    <button class="btn-expand btn-expand-max" id="btn-expand-max" onclick="expandPiMax()" title="Calcular hasta 50.000.000 decimales de una vez" disabled>
+      +50M
     </button>
     <div class="dot" id="dot"></div><span id="stxt">…</span>
   </div>
@@ -455,7 +460,8 @@ function activateUI() {
   setStatus('ok', 'LISTO');
   // Habilitar botón expand solo en modo servidor
   if (serverMode) {
-    $('btn-expand').disabled = serverMax >= 50_000_000;
+    $('btn-expand').disabled     = serverMax >= 50_000_000;
+    $('btn-expand-max').disabled = serverMax >= 50_000_000;
   }
   $('q').focus();
 }
@@ -992,6 +998,90 @@ async function loadNewDecimals(target) {
     renderText(lastMS, mIdx);
     renderBanner();
   } catch(e) { console.error('Error cargando nuevos decimales:', e); }
+}
+
+async function expandPiMax() {
+  if (!serverMode) return;
+  const target = 50_000_000;
+  if (serverMax >= target) return;
+  const diff = target - serverMax;
+  if (!confirm(`¿Calcular hasta 50.000.000 decimales de π?\n\nEsto añadirá ${diff.toLocaleString('es')} decimales.\nEl cálculo puede tardar varias horas según el hardware.\n\nEl servidor seguirá disponible durante el proceso.`)) return;
+
+  const btn = $('btn-expand-max');
+  btn.disabled = true;
+  $('btn-expand').disabled = true;
+
+  try {
+    // Llamar a expand repetidamente en background — el servidor suma de 500K en 500K
+    // pero mostramos el modal con el target final directamente
+    const r = await fetch('/api/expand', { method: 'POST' });
+    const d = await r.json();
+    if (!r.ok) { alert(d.error || 'Error'); btn.disabled = false; $('btn-expand').disabled = false; return; }
+
+    $('me-from').textContent = fn(serverMax) + ' dec.';
+    $('me-to').textContent   = fn(target) + ' dec.';
+    $('me-bar').style.width  = '1%';
+    $('me-detail').innerHTML = 'Calculando 50.000.000 decimales con Chudnovsky…<br>Esto puede tardar varias horas. Puedes cerrar esta ventana, el cálculo continúa en el servidor.';
+    $('modal-expand').classList.add('show');
+    btn.classList.add('expanding');
+    btn.textContent = 'CALCULANDO…';
+
+    meBarPct = 1;
+    clearInterval(meBarTimer);
+    meBarTimer = setInterval(() => {
+      meBarPct = Math.min(98, meBarPct + 0.02);
+      $('me-bar').style.width = meBarPct + '%';
+    }, 1000);
+
+    // Polling — pero el servidor solo expande de 500K en 500K,
+    // así que necesitamos seguir pidiendo expansiones hasta llegar a 50M
+    startExpandPollMax(target);
+  } catch(e) {
+    alert('Error de red: ' + e.message);
+    btn.disabled = false; $('btn-expand').disabled = false;
+  }
+}
+
+function startExpandPollMax(finalTarget) {
+  clearInterval(expandPollTimer);
+  let elapsed = 0;
+  expandPollTimer = setInterval(async () => {
+    elapsed += 5;
+    try {
+      const r = await fetch('/api/status');
+      const d = await r.json();
+      const cur = d.currentMax || 0;
+      const pct = Math.round(cur / finalTarget * 100);
+      $('me-detail').innerHTML =
+        `Calculando con Chudnovsky…<br>` +
+        `${fn(cur)} / ${fn(finalTarget)} decimales · ${elapsed}s · ${pct}%`;
+      $('me-bar').style.width = Math.max(1, pct) + '%';
+
+      if (!d.expanding && cur < finalTarget) {
+        // Pedir siguiente bloque de 500K
+        await fetch('/api/expand', { method: 'POST' }).catch(() => {});
+      }
+
+      if (!d.expanding && cur >= finalTarget) {
+        clearInterval(expandPollTimer);
+        clearInterval(meBarTimer);
+        $('me-bar').style.width = '100%';
+        $('me-detail').innerHTML =
+          `✓ <strong style="color:var(--g)">${fn(finalTarget)}</strong> decimales disponibles.<br>Cargando en el display…`;
+        serverMax = finalTarget;
+        updateFooter();
+        await loadNewDecimals(finalTarget);
+        setTimeout(() => {
+          closeExpandModal();
+          renderBanner();
+          $('btn-expand-max').classList.remove('expanding');
+          $('btn-expand-max').textContent = '+50M';
+          $('btn-expand-max').disabled = true; // ya llegó al límite
+          $('btn-expand').disabled = true;
+        }, 1200);
+      }
+    } catch(e) {}
+  }, 5000);
 }
 
 function closeExpandModal() {
