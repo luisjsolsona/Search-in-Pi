@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Search in π</title>
+<link rel="icon" type="image/svg+xml" href="/icon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --g:#00ff88;--gd:#00cc6a;--y:#ffdd00;--r:#ff4466;--b:#00ccff;
+  --bg:#050f0a;--bg2:#081510;--brd:#00ff8820;--txt:#a0ffd0;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;height:100dvh}
+body{
+  background:var(--bg);color:var(--txt);
+  font-family:'Share Tech Mono',monospace;
+  display:flex;flex-direction:column;overflow:hidden;
+  padding-left:env(safe-area-inset-left);
+  padding-right:env(safe-area-inset-right);
+}
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:900;opacity:.3;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E")
+}
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:899;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,136,.01) 2px,rgba(0,255,136,.01) 4px)
+}
+
+/* ═══ HEADER ═══ */
+header{
+  flex-shrink:0;background:var(--bg2);border-bottom:1px solid var(--brd);
+  padding:10px 14px 8px;display:flex;align-items:center;gap:10px;
+}
+.logo-wrap{flex-shrink:0;width:clamp(32px,8vw,46px);height:clamp(32px,8vw,46px)}
+.logo-wrap img{width:100%;height:100%;display:block}
+.hinfo{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.htitle{
+  font-family:'Orbitron',sans-serif;color:var(--gd);text-transform:uppercase;
+  letter-spacing:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  font-size:clamp(.44rem,.08rem + 1.5vw,.62rem);
+}
+.hsub{
+  color:#336655;letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  font-size:clamp(.52rem,.08rem + 1.2vw,.66rem);
+}
+.spill{flex-shrink:0;display:flex;align-items:center;gap:7px;font-size:clamp(.52rem,.08rem + 1.1vw,.66rem);color:var(--gd)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--y);box-shadow:0 0 7px var(--y);
+  animation:blink 1s ease-in-out infinite;transition:background .3s,box-shadow .3s;flex-shrink:0}
+.dot.ok{background:var(--g);box-shadow:0 0 7px var(--g);animation:none}
+.dot.go{background:var(--b);box-shadow:0 0 7px var(--b)}
+.dot.err{background:var(--r);box-shadow:0 0 7px var(--r);animation:none}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.12}}
+
+/* ═══ SEARCH ZONE ═══ */
+.sz{
+  flex-shrink:0;background:var(--bg2);border-bottom:1px solid var(--brd);
+  padding:10px 14px 8px;display:flex;flex-direction:column;align-items:stretch;gap:8px;
+}
+.sr{display:flex;gap:6px;align-items:stretch;width:100%}
+.slbl{display:none;font-family:'Orbitron',sans-serif;font-size:.52rem;
+  color:var(--gd);letter-spacing:2px;white-space:nowrap;align-self:center}
+input[type=text]{
+  flex:1;min-width:0;background:#000;border:1px solid var(--gd);color:var(--g);
+  font-family:'Share Tech Mono',monospace;padding:11px 12px;outline:none;
+  letter-spacing:3px;border-radius:2px;transition:border-color .2s,box-shadow .2s;
+  font-size:clamp(.9rem,.4rem + 2.2vw,1.25rem);-webkit-appearance:none;appearance:none;
+}
+input:focus{border-color:var(--g);box-shadow:0 0 10px var(--gd),inset 0 0 6px rgba(0,255,136,.04)}
+input::placeholder{color:#1a4433;letter-spacing:1px}
+.bp,.bo{
+  flex-shrink:0;border-radius:2px;cursor:pointer;font-family:'Orbitron',sans-serif;font-weight:700;
+  white-space:nowrap;min-height:44px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;
+  transition:background .15s,box-shadow .15s,color .15s;
+}
+.bp{background:var(--g);color:#000;border:none;font-size:clamp(.55rem,.2rem + 1.3vw,.65rem);letter-spacing:1px;padding:0 14px}
+.bp:active,.bp:hover{background:#fff;box-shadow:0 0 14px var(--g)}
+.bp:disabled{background:#1a3328;color:#2a5540;cursor:default;box-shadow:none}
+.bo{background:transparent;border:1px solid var(--b);color:var(--b);
+  font-size:clamp(.5rem,.18rem + 1.2vw,.6rem);letter-spacing:1px;padding:0 10px}
+.bo:active:not(:disabled),.bo:hover:not(:disabled){background:var(--b);color:#000}
+.bo:disabled{opacity:.22;cursor:default}
+
+/* RESULTS BAR */
+.rb{width:100%;font-size:clamp(.58rem,.12rem + 1.2vw,.7rem);letter-spacing:.3px;
+  display:flex;gap:6px;align-items:center;flex-wrap:wrap;line-height:1.5;min-height:20px}
+.rc{color:var(--y)}.rp{color:var(--txt)}
+.rn{margin-left:auto;display:flex;gap:4px;align-items:center}
+.bn{background:transparent;border:1px solid var(--gd);color:var(--gd);
+  font-family:'Share Tech Mono',monospace;font-size:clamp(.6rem,.2rem + 1.1vw,.7rem);
+  padding:6px 11px;cursor:pointer;border-radius:2px;min-height:36px;min-width:36px;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.bn:active:not(:disabled),.bn:hover:not(:disabled){border-color:var(--g);color:var(--g)}
+.bn:disabled{opacity:.18;cursor:default}
+.bn.bl{border-color:var(--b);color:var(--b)}
+.bn.bl:active:not(:disabled),.bn.bl:hover:not(:disabled){background:var(--b);color:#000}
+.ni{color:var(--gd);font-size:clamp(.58rem,.15rem + 1vw,.66rem);min-width:55px;text-align:center}
+
+/* PI DISPLAY */
+.pc{flex:1;overflow-y:auto;overflow-x:hidden;padding:12px 12px 0;background:var(--bg);
+  -webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.pc::-webkit-scrollbar{width:4px}
+.pc::-webkit-scrollbar-track{background:#050f0a}
+.pc::-webkit-scrollbar-thumb{background:#00ff8828;border-radius:3px}
+#pt{font-size:clamp(.65rem,.2rem + 1.5vw,.8rem);line-height:1.95;word-break:break-all;
+  white-space:pre-wrap;color:#3a8a60;user-select:text}
+mark.hi{background:var(--y);color:#000;border-radius:2px;padding:0 1px}
+mark.hi.cur{background:var(--r);color:#fff;box-shadow:0 0 9px var(--r)}
+
+/* PROGRESS */
+#prog-block{margin:12px 0 8px;display:none;flex-direction:column;gap:6px}
+.pb-lbl{font-size:clamp(.58rem,.12rem + 1.1vw,.67rem);color:var(--b);letter-spacing:.5px;line-height:1.4}
+.pb-wrap{height:4px;background:#0a2a1a;border-radius:2px;overflow:hidden}
+.pb-bar{height:100%;background:var(--b);border-radius:2px;transition:width .4s;width:0%}
+.pb-eta{font-size:clamp(.52rem,.1rem + 1vw,.6rem);color:#2a6688;letter-spacing:.5px}
+
+/* BOTTOM BANNER */
+#bbanner{margin:10px 0 14px;padding:10px 12px;border-radius:3px;
+  border:1px solid #1a3344;background:rgba(0,100,150,.05);
+  display:none;align-items:center;gap:10px;flex-wrap:wrap}
+.bb-info{font-size:clamp(.58rem,.12rem + 1.1vw,.66rem);color:#4488aa;letter-spacing:.3px;flex:1;line-height:1.5}
+.bb-info strong{color:#aaddff}
+
+/* SERVER BADGE */
+#srv-badge{
+  position:fixed;bottom:calc(30px + env(safe-area-inset-bottom));right:12px;
+  background:rgba(5,15,10,.85);border:1px solid #00ff8830;border-radius:4px;
+  padding:4px 8px;font-size:.55rem;color:#1a5533;z-index:100;
+  display:flex;align-items:center;gap:6px;backdrop-filter:blur(4px);
+}
+#srv-badge.server{border-color:#00ff8860;color:var(--gd)}
+
+/* FOOTER */
+footer{
+  flex-shrink:0;background:var(--bg2);border-top:1px solid var(--brd);
+  padding:5px 12px;padding-bottom:calc(5px + env(safe-area-inset-bottom));
+  display:flex;gap:8px;align-items:center;
+  font-size:clamp(.52rem,.08rem + 1.1vw,.62rem);color:#1a5533;letter-spacing:.3px;
+}
+footer b{color:#336644}
+.fw{flex:1;min-width:30px;height:3px;background:#0a2a1a;border-radius:2px;overflow:hidden}
+.fb{height:100%;background:var(--g);border-radius:2px;transition:width .5s;width:0%}
+.fhide{display:none}
+
+/* BREAKPOINTS */
+@media(min-width:480px){.slbl{display:flex}.fhide{display:inline}footer{gap:10px}}
+@media(min-width:768px){
+  header{padding:12px 22px 10px;gap:14px}.sz{padding:12px 22px 10px;gap:9px}.sr{gap:8px}
+  input{padding:10px 14px;letter-spacing:4px}input::placeholder{letter-spacing:2px}
+  .bp{letter-spacing:2px;padding:0 16px}.bo{letter-spacing:2px;padding:0 12px}
+  .pc{padding:14px 20px 0}footer{padding:5px 20px;gap:14px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-wrap"><img src="/icon.svg" alt="Search in Pi"></div>
+  <div class="hinfo">
+    <div class="htitle">Search in π · Bloques bajo demanda</div>
+    <div class="hsub" id="hsub">conectando con el servidor…</div>
+  </div>
+  <div class="spill"><div class="dot" id="dot"></div><span id="stxt">…</span></div>
+</header>
+
+<div class="sz">
+  <div class="sr">
+    <span class="slbl">BUSCAR EN π</span>
+    <input type="text" id="q" placeholder="Ej: 271828" maxlength="20"
+           autocomplete="off" spellcheck="false" inputmode="numeric" disabled>
+    <button class="bp" id="bbuscar" disabled onclick="buscar()">BUSCAR</button>
+    <button class="bo" id="bmas" disabled onclick="cargarMasYBuscar()">+BLOQUE</button>
+  </div>
+  <div class="rb" id="rbar">
+    <span style="color:#1a5533">Iniciando…</span>
+  </div>
+</div>
+
+<div class="pc" id="pc">
+  <div id="pt"><span style="color:#1a5533">▌ cargando π del servidor…</span></div>
+  <div id="prog-block">
+    <div class="pb-lbl" id="pblbl">Cargando…</div>
+    <div class="pb-wrap"><div class="pb-bar" id="pbbar"></div></div>
+    <div class="pb-eta" id="pbeta"></div>
+  </div>
+  <div id="bbanner"></div>
+</div>
+
+<footer>
+  <b>CARGADOS:</b><span id="fc">—</span>
+  <span class="fhide">|</span>
+  <span class="fhide"><b>BUSCADOS:</b><span id="fb">—</span></span>
+  <span class="fhide">|</span>
+  <span class="fhide"><b>SERVIDOR:</b><span id="fmax">—</span></span>
+  <div class="fw"><div class="fb" id="fbar"></div></div>
+  <span id="fpct">0%</span>
+</footer>
+
+<div id="srv-badge">⚡ cliente JS</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   CONFIGURACIÓN
+════════════════════════════════════════════════════════════ */
+const INIT_COUNT  = 10_000;   // decimales en la primera carga
+const CHUNK_COUNT = 50_000;   // decimales por bloque adicional
+
+/* ════════════════════════════════════════════════════════════
+   ESTADO
+════════════════════════════════════════════════════════════ */
+let piDec      = '';    // decimales acumulados del servidor
+let loaded     = 0;     // cuántos decimales tenemos
+let serverMax  = 0;     // cuántos tiene disponibles el servidor
+let serverMode = false; // true si usamos API, false si usamos Worker local
+let searched   = 0;
+let busy       = false;
+let matches    = [];
+let mIdx       = 0;
+let lastQ      = '';
+let lastMS     = null;
+
+/* ════════════════════════════════════════════════════════════
+   DETECCIÓN DE MODO: servidor vs. standalone
+   Si /api/status responde → modo servidor
+   Si no → fallback a Web Worker local (Machin BigInt)
+════════════════════════════════════════════════════════════ */
+async function detectMode() {
+  try {
+    const r = await fetch('/api/status', { signal: AbortSignal.timeout(2000) });
+    if (!r.ok) throw new Error('no ok');
+    const d = await r.json();
+    serverMax  = d.maxDigits || 100_000;
+    serverMode = true;
+    document.getElementById('srv-badge').textContent = `🖥 servidor · ${fn(serverMax)} dec.`;
+    document.getElementById('srv-badge').classList.add('server');
+    return true;
+  } catch {
+    document.getElementById('srv-badge').textContent = '⚡ cliente JS (standalone)';
+    serverMode = false;
+    return false;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   MODO SERVIDOR — carga bloques via API
+════════════════════════════════════════════════════════════ */
+async function waitServerReady() {
+  // Esperar hasta que /api/status devuelva ready:true
+  for (let i = 0; i < 60; i++) {
+    try {
+      const r = await fetch('/api/status');
+      const d = await r.json();
+      if (d.ready) { serverMax = d.totalDigits; return true; }
+    } catch {}
+    setStatus('go', 'SERVIDOR…');
+    $('hsub').textContent = `Servidor calculando π… (${i * 5}s)`;
+    await sleep(5000);
+  }
+  return false;
+}
+
+async function loadFromServer(start, count) {
+  const url = `/api/pi?start=${start}&count=${count}`;
+  const r   = await fetch(url);
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  const d = await r.json();
+  return d.decimals;
+}
+
+async function searchOnServer(q) {
+  const url = `/api/search?q=${encodeURIComponent(q)}&start=0&count=${serverMax}`;
+  const r   = await fetch(url);
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return await r.json(); // { positions, totalFound, truncated }
+}
+
+/* ════════════════════════════════════════════════════════════
+   MODO STANDALONE — Web Worker Machin BigInt
+════════════════════════════════════════════════════════════ */
+const WORKER_SRC = `
+function arctan(x,prec){
+  const S=10n**BigInt(prec+20),x2=BigInt(x*x);
+  let term=S/BigInt(x),sum=term,neg=true,k=3n;
+  while(true){
+    term=term/x2; if(term===0n)break;
+    const d=term/k; if(d===0n)break;
+    if(neg)sum-=d;else sum+=d; neg=!neg; k+=2n;
+  }
+  return sum;
+}
+self.onmessage=function(e){
+  const{start,end}=e.data, prec=end+5;
+  self.postMessage({type:'status',msg:'arctan(1/5)…'});
+  const t5=arctan(5,prec);
+  self.postMessage({type:'status',msg:'arctan(1/239)…'});
+  const t239=arctan(239,prec);
+  self.postMessage({type:'status',msg:'combinando…'});
+  const S=10n**BigInt(prec+20);
+  const piS=4n*(4n*t5-t239);
+  const piI=piS*(10n**BigInt(end))/S;
+  const s=piI.toString(); // '3'+decimales
+  self.postMessage({type:'done',chunk:s.slice(1).slice(start,end),start,end});
+};
+`;
+let worker=null, progTimer=null, calcT0=0;
+
+function makeWorker(){
+  return new Worker(URL.createObjectURL(new Blob([WORKER_SRC],{type:'application/javascript'})));
+}
+function calcBlock(upTo){
+  return new Promise((res,rej)=>{
+    if(worker){try{worker.terminate()}catch(_){}}
+    worker=makeWorker();
+    worker.onmessage=e=>{
+      const d=e.data;
+      if(d.type==='status'){
+        const el=$('pblbl'); if(el) el.textContent=`π[${fn(loaded+1)}–${fn(upTo)}] · ${d.msg}`;
+      } else if(d.type==='done'){worker.terminate();worker=null;res(d.chunk);}
+    };
+    worker.onerror=e=>{worker.terminate();worker=null;rej(e);};
+    worker.postMessage({start:loaded,end:upTo});
+  });
+}
+
+/* ════════════════════════════════════════════════════════════
+   PROGRESS BAR (fake, visual feedback)
+════════════════════════════════════════════════════════════ */
+function startProg(label, speed=0.8){
+  $('prog-block').style.display='flex';
+  $('pblbl').textContent=label;
+  $('pbbar').style.width='3%';
+  $('pbeta').textContent='';
+  calcT0=Date.now(); let pct=3;
+  progTimer=setInterval(()=>{
+    pct=Math.min(95, pct+(pct<70?speed:.07));
+    $('pbbar').style.width=pct+'%';
+    $('pbeta').textContent=Math.round((Date.now()-calcT0)/1000)+'s';
+  },300);
+}
+function stopProg(){
+  clearInterval(progTimer);
+  $('pbbar').style.width='100%';
+  setTimeout(()=>{$('prog-block').style.display='none';},500);
+}
+
+/* ════════════════════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════════════════════ */
+async function init(){
+  setStatus('go','…');
+  const isServer = await detectMode();
+
+  if(isServer){
+    // Esperar a que el servidor termine de calcular
+    setStatus('go','SERVIDOR…');
+    startProg('Esperando cálculo del servidor…', 0.3);
+    const ok = await waitServerReady();
+    if(!ok){ stopProg(); setStatus('err','ERROR'); $('hsub').textContent='El servidor no respondió'; return; }
+    stopProg();
+    // Cargar primer bloque
+    startProg(`Descargando π[1–${fn(INIT_COUNT)}]…`, 2);
+    try{
+      const chunk = await loadFromServer(0, INIT_COUNT);
+      piDec=chunk; loaded=INIT_COUNT;
+      stopProg(); updateFooter(); renderText(); renderBanner(); activateUI();
+    }catch(e){ stopProg(); setStatus('err','ERROR'); $('pt').textContent='⚠ '+e.message; }
+  } else {
+    // Modo standalone: calcular localmente
+    const MAX_LOCAL = 500_000;
+    serverMax = MAX_LOCAL;
+    startProg(`Calculando π[1–${fn(INIT_COUNT)}]…`);
+    try{
+      const chunk = await calcBlock(INIT_COUNT);
+      piDec=chunk; loaded=INIT_COUNT;
+      stopProg(); updateFooter(); renderText(); renderBanner(); activateUI();
+    }catch(e){ stopProg(); setStatus('err','ERROR'); $('pt').textContent='⚠ '+e.message; }
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   CARGA DE BLOQUE ADICIONAL
+════════════════════════════════════════════════════════════ */
+async function loadNextBlock(){
+  if(busy || loaded >= serverMax) return false;
+  busy=true;
+  const upTo=Math.min(loaded+CHUNK_COUNT, serverMax);
+  setStatus('go','CARGANDO'); $('bbuscar').disabled=true; $('bmas').disabled=true;
+  startProg(serverMode
+    ? `Descargando π[${fn(loaded+1)}–${fn(upTo)}]…`
+    : `Calculando π[${fn(loaded+1)}–${fn(upTo)}]…`
+  , serverMode ? 3 : 0.8);
+  try{
+    let chunk;
+    if(serverMode){ chunk = await loadFromServer(loaded, upTo-loaded); }
+    else          { chunk = await calcBlock(upTo); }
+    piDec+=chunk; loaded=upTo;
+    stopProg(); updateFooter(); renderText(lastMS,mIdx); renderBanner();
+    busy=false; setStatus('ok','LISTO');
+    $('bbuscar').disabled=false; $('bmas').disabled=loaded>=serverMax;
+    return true;
+  }catch(e){
+    stopProg(); setStatus('err','ERROR'); busy=false;
+    $('bbuscar').disabled=false; $('bmas').disabled=false;
+    return false;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   UI HELPERS
+════════════════════════════════════════════════════════════ */
+const $  = id=>document.getElementById(id);
+const fn = n=>n.toLocaleString('es');
+const sleep = ms=>new Promise(r=>setTimeout(r,ms));
+
+function setStatus(cls,txt){
+  $('dot').className='dot'+(cls?' '+cls:'');
+  $('stxt').textContent=txt;
+}
+function updateFooter(){
+  const pct=Math.min(100,Math.round(loaded/serverMax*100));
+  $('fc').textContent=' '+fn(loaded);
+  $('fb').textContent=searched?' '+fn(searched):' —';
+  $('fmax').textContent=' '+fn(serverMax)+' dec.';
+  $('fbar').style.width=pct+'%'; $('fpct').textContent=pct+'%';
+  $('hsub').textContent=`${fn(loaded)} dec. cargados · ${fn(serverMax-loaded)} restantes`;
+}
+function activateUI(){
+  $('q').disabled=false; $('bbuscar').disabled=false;
+  $('bmas').disabled=loaded>=serverMax;
+  setStatus('ok','LISTO');
+  $('rbar').innerHTML=`<span style="color:#1a5533;font-size:clamp(.56rem,.1rem+1.1vw,.67rem)">
+    ${fn(loaded)} dec. listos · escribe y pulsa BUSCAR</span>`;
+  $('q').focus();
+}
+
+/* ════════════════════════════════════════════════════════════
+   RENDER
+════════════════════════════════════════════════════════════ */
+function buildHTML(dec,ms,ai){
+  const hasM=ms&&ms.size>0;
+  const p=['3.']; let col=0,i=0,len=dec.length;
+  while(i<len){
+    if(col>0)p.push(' '); let j=0;
+    while(j<10&&i<len){
+      if(hasM&&ms.has(i)){
+        const{end,mi}=ms.get(i), cls=mi===ai?'hi cur':'hi';
+        p.push(`<mark class="${cls}">`);
+        const mE=Math.min(end,len);
+        while(i<mE){
+          p.push(dec[i]);i++;j++;
+          if(j>=10&&i<mE){
+            p.push('</mark>');col++;
+            if(col===5){p.push('\n');col=0;}else p.push(' ');
+            p.push(`<mark class="${cls}">`);j=0;
+          }
+        }
+        p.push('</mark>');
+      }else{p.push(dec[i]);i++;j++;}
+    }
+    col++;if(col===5){p.push('\n');col=0;}
+  }
+  return p.join('');
+}
+function renderText(ms,ai){
+  const el=$('pt');
+  if(ms&&ms.size>0) el.innerHTML=buildHTML(piDec,ms,ai??mIdx);
+  else el.textContent=buildHTML(piDec,null,-1);
+}
+function renderBanner(){
+  const b=$('bbanner');
+  if(loaded>=serverMax){
+    b.style.display='flex';
+    b.innerHTML=`<span class="bb-info">✓ Límite: <strong>${fn(serverMax)}</strong> dec. disponibles</span>`;
+    return;
+  }
+  const next=Math.min(loaded+CHUNK_COUNT,serverMax);
+  b.style.display='flex';
+  b.innerHTML=`
+    <span class="bb-info">
+      <strong>${fn(loaded)}</strong> de <strong>${fn(serverMax)}</strong> dec.
+      · Siguiente: hasta <strong>${fn(next)}</strong>
+    </span>
+    <button class="bo" style="font-size:.53rem;padding:8px 11px;min-height:38px"
+      onclick="loadBlockAndRefresh()" ${busy?'disabled':''}>
+      +${fn(Math.min(CHUNK_COUNT,serverMax-loaded))}
+    </button>`;
+}
+async function loadBlockAndRefresh(){
+  const ok=await loadNextBlock();
+  if(ok){renderText(lastMS,mIdx);renderBanner();if(lastQ)extendSearch(lastQ);}
+}
+
+/* ════════════════════════════════════════════════════════════
+   BÚSQUEDA
+════════════════════════════════════════════════════════════ */
+async function buscar(){
+  const q=$('q').value.trim().replace(/\D/g,'');
+  if(!q||busy) return;
+  lastQ=q; matches=[]; mIdx=0; searched=0;
+
+  // Si modo servidor: búsqueda server-side en TODOS los decimales disponibles
+  if(serverMode){
+    setStatus('go','BUSCANDO');
+    $('bbuscar').disabled=true;
+    try{
+      const res = await searchOnServer(q);
+      matches   = res.positions;
+      searched  = serverMax;
+      // Asegurarnos de tener cargados los decimales hasta la primera aparición
+      if(matches.length>0 && matches[0]>loaded){
+        // Cargar hasta la primera aparición
+        const needed=Math.ceil(matches[0]/CHUNK_COUNT)*CHUNK_COUNT;
+        const upTo=Math.min(needed,serverMax);
+        if(upTo>loaded){
+          startProg(`Cargando hasta dec. ${fn(upTo)} para mostrar resultado…`,3);
+          while(loaded<upTo){
+            const chunk=await loadFromServer(loaded,Math.min(CHUNK_COUNT,upTo-loaded));
+            piDec+=chunk; loaded+=chunk.length;
+          }
+          stopProg(); updateFooter();
+        }
+      }
+    }catch(e){
+      console.error('Search error:',e);
+      // fallback a búsqueda local
+      let i=0; while((i=piDec.indexOf(q,i))!==-1){matches.push(i+1);i++;}
+      searched=loaded;
+    }
+    $('bbuscar').disabled=false;
+    setStatus('ok','LISTO');
+  } else {
+    // Modo standalone: búsqueda local en lo cargado
+    let i=0; while((i=piDec.indexOf(q,i))!==-1){matches.push(i+1);i++;}
+    searched=loaded;
+  }
+
+  $('fb').textContent=' '+fn(searched);
+  buildMS(q); updateRbar(q); renderText(lastMS,mIdx); scrollCur();
+}
+
+function extendSearch(q){
+  const from=Math.max(0,searched-q.length+1), prev=matches.length;
+  let i=from; while((i=piDec.indexOf(q,i))!==-1){matches.push(i+1);i++;}
+  searched=loaded; $('fb').textContent=' '+fn(searched);
+  buildMS(q); updateRbar(q);
+  if(matches.length>prev){mIdx=prev;renderText(lastMS,mIdx);scrollCur();}
+  else renderText(lastMS,mIdx);
+}
+
+async function cargarMasYBuscar(){
+  if(busy)return;
+  const q=$('q').value.trim().replace(/\D/g,'')||lastQ;
+  if(!q){await loadNextBlock();renderText();renderBanner();activateUI();return;}
+  lastQ=q;
+  const ok=await loadNextBlock();
+  if(ok){extendSearch(q);renderBanner();}
+}
+
+function buildMS(q){
+  const ms=new Map();
+  matches.forEach((pos,i)=>ms.set(pos-1,{end:pos-1+q.length,mi:i}));
+  lastMS=ms;
+}
+
+function updateRbar(q){
+  const bar=$('rbar');
+  const more=loaded<serverMax;
+  const moreBtn=more
+    ?`<button class="bn bl" onclick="cargarMasYBuscar()" title="+${fn(CHUNK_COUNT)} dec.">+${fn(CHUNK_COUNT)}</button>`:'';
+  if(!matches.length){
+    bar.innerHTML=`<span class="rc">«${q}» no encontrado</span>
+      <span class="rp">en ${fn(searched)} dec.</span>
+      ${more?`<span class="rn">${moreBtn}</span>`:''}`;
+    return;
+  }
+  bar.innerHTML=`
+    <span class="rc">${fn(matches.length)} vez${matches.length!==1?'es':''}</span>
+    <span class="rp">1ª: dec.${fn(matches[0])}${serverMode&&searched>=serverMax?' (búsqueda completa)':''}</span>
+    <span class="rn">
+      ${!serverMode&&more?moreBtn:''}
+      <button class="bn" id="bprev" onclick="nav(-1)" disabled>◀</button>
+      <span class="ni" id="ninfo">1/${fn(matches.length)}</span>
+      <button class="bn" id="bnext" onclick="nav(1)" ${matches.length>1?'':'disabled'}>▶</button>
+    </span>`;
+}
+
+function nav(dir){
+  mIdx=Math.max(0,Math.min(matches.length-1,mIdx+dir));
+  // Si la posición no está cargada aún, cargar automáticamente
+  const pos=matches[mIdx];
+  if(pos>loaded){
+    (async()=>{
+      setStatus('go','CARGANDO');
+      const needed=Math.ceil(pos/CHUNK_COUNT)*CHUNK_COUNT;
+      const upTo=Math.min(needed,serverMax);
+      while(loaded<upTo&&serverMode){
+        const chunk=await loadFromServer(loaded,Math.min(CHUNK_COUNT,upTo-loaded));
+        piDec+=chunk; loaded+=chunk.length;
+      }
+      updateFooter(); renderText(lastMS,mIdx); setStatus('ok','LISTO');
+      $('ninfo').textContent=`${fn(mIdx+1)}/${fn(matches.length)}`;
+      $('bprev').disabled=mIdx===0; $('bnext').disabled=mIdx===matches.length-1;
+      scrollCur();
+    })();
+    return;
+  }
+  renderText(lastMS,mIdx);
+  $('ninfo').textContent=`${fn(mIdx+1)}/${fn(matches.length)}`;
+  $('bprev').disabled=mIdx===0; $('bnext').disabled=mIdx===matches.length-1;
+  scrollCur();
+}
+function scrollCur(){
+  const el=document.querySelector('mark.cur');
+  if(el)el.scrollIntoView({block:'center',behavior:'smooth'});
+}
+
+$('q').addEventListener('keydown',e=>{if(e.key==='Enter')buscar();});
+init();
+</script>
+</body>
+</html>
