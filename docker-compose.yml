@@ -18,7 +18,7 @@ services:
       #   100000  →  ~256MB RAM, ~5s cálculo
       #   500000  →  ~1GB RAM,   ~60s cálculo
       #   1000000 →  ~2GB RAM,   ~4min cálculo
-      - MAX_DIGITS=100000
+      - MAX_DIGITS=1000000
       - NODE_ENV=production
 
     # CasaOS muestra estas etiquetas en la interfaz
@@ -36,16 +36,16 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
+          memory: 2G
         reservations:
-          memory: 128M
+          memory: 512M
 
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3141/api/status"]
       interval: 15s
       timeout: 5s
       retries: 5
-      start_period: 90s
+      start_period: 300s
 
 x-casaos:
   architectures:

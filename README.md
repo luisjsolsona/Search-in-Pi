@@ -72,7 +72,7 @@ Busca **"Search in Pi"** en el App Store de CasaOS.
 | Variable | Por defecto | Descripción |
 |---|---|---|
 | `PORT` | `3141` | Puerto del servidor HTTP |
-| `MAX_DIGITS` | `100000` | Decimales de π a calcular al arrancar |
+| `MAX_DIGITS` | `1000000` | Decimales de π a calcular al arrancar |
 | `NODE_ENV` | `production` | Modo de Node.js |
 
 ### Recursos recomendados según `MAX_DIGITS`

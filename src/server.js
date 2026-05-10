@@ -14,7 +14,7 @@ const path    = require('path');
 
 const app  = express();
 const PORT = process.env.PORT || 3141;
-const MAX_DIGITS = parseInt(process.env.MAX_DIGITS || '100000', 10);
+const MAX_DIGITS = parseInt(process.env.MAX_DIGITS || '1000000', 10);
 
 // ═══════════════════════════════════════════════════════════
 //  ALGORITMO CHUDNOVSKY + BINARY SPLITTING (BigInt)

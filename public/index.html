@@ -273,7 +273,7 @@ footer b{color:#336644}
 
 <!-- HEADER -->
 <header>
-  <div class="logo-wrap"><img src="/icon.svg" alt="Search in Pi"></div>
+  <a class="logo-wrap" onclick="scrollTop()" title="Ir al inicio" style="cursor:pointer;text-decoration:none"><img src="/icon.svg" alt="Search in Pi"></a>
   <div class="hinfo">
     <div class="htitle">Search in π</div>
     <div class="hsub" id="hsub">conectando…</div>
@@ -820,6 +820,13 @@ async function buscar() {
    ENTER
 ════════════════════════════════════════════════ */
 $('q').addEventListener('keydown', e => { if (e.key === 'Enter') buscar(); });
+
+function scrollTop() {
+  const pc = $('pc');
+  pc.scrollTo({ top: 0, behavior: 'smooth' });
+  // Limpiar resaltados y volver al inicio visual
+  if (lastMS) { lastMS = null; renderText(); }
+}
 
 init();
 </script>
