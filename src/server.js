@@ -18,8 +18,17 @@ const PORT = process.env.PORT || 3141;
 
 // Límite inicial configurable; puede crecer en caliente
 let currentMax = parseInt(process.env.MAX_DIGITS || '1000000', 10);
-const EXPAND_STEP = 500_000;   // decimales que añade cada llamada a /api/expand
-const HARD_LIMIT  = 50_000_000; // límite absoluto de seguridad (RAM)
+const EXPAND_STEP = 500_000;  // decimales que añade cada llamada a /api/expand
+
+// Límite dinámico basado en la RAM total del sistema.
+// Cada decimal necesita ~1 byte en el string final, pero durante el cálculo
+// Chudnovsky usa BigInt intermedios que multiplican el uso de RAM por ~10-20x.
+// Usamos un factor conservador: RAM_total / 20 → decimales seguros.
+const os = require('os');
+const RAM_TOTAL_GB  = os.totalmem() / (1024 ** 3);
+const HARD_LIMIT    = Math.floor(RAM_TOTAL_GB * 1_000_000 / 20) * 1_000; // múltiplo de 1000
+// Mínimo 1M, máximo 1.000M (1 billón — límite teórico de string en V8)
+const HARD_LIMIT_SAFE = Math.max(1_000_000, Math.min(1_000_000_000, HARD_LIMIT));
 
 // ═══════════════════════════════════════════════════════════
 //  ALGORITMO CHUDNOVSKY + BINARY SPLITTING (BigInt)
@@ -72,7 +81,8 @@ let ready    = false;
 let expanding = false; // mutex: evita dos expansiones simultáneas
 
 // ── Cálculo inicial ────────────────────────────────────────
-console.log(`[π] Search-in-Pi v1.1.0`);
+console.log(`[π] Search-in-Pi v1.2.0`);
+console.log(`[π] RAM total: ${RAM_TOTAL_GB.toFixed(1)} GB → límite dinámico: ${HARD_LIMIT_SAFE.toLocaleString('es')} decimales`);
 console.log(`[π] Calculando ${currentMax.toLocaleString('es')} decimales con Chudnovsky…`);
 const t0 = Date.now();
 
@@ -145,8 +155,9 @@ app.get('/api/status', (req, res) => {
     totalDigits:  ready ? PI_STR.length - 1 : 0,
     currentMax,
     expandStep:   EXPAND_STEP,
-    hardLimit:    HARD_LIMIT,
-    version:      '1.1.0',
+    hardLimit:    HARD_LIMIT_SAFE,
+    ramGB:        parseFloat(RAM_TOTAL_GB.toFixed(1)),
+    version:      '1.2.0',
   });
 });
 
@@ -208,8 +219,8 @@ app.post('/api/expand', (req, res) => {
   if (expanding) return res.status(409).json({ error: 'Ya hay una expansión en curso', currentMax });
 
   const newTarget = currentMax + EXPAND_STEP;
-  if (newTarget > HARD_LIMIT)
-    return res.status(400).json({ error: `Límite absoluto: ${HARD_LIMIT.toLocaleString('es')} decimales`, hardLimit: HARD_LIMIT });
+  if (newTarget > HARD_LIMIT_SAFE)
+    return res.status(400).json({ error: `Límite según RAM disponible: ${HARD_LIMIT_SAFE.toLocaleString('es')} decimales (${RAM_TOTAL_GB.toFixed(1)} GB RAM total)`, hardLimit: HARD_LIMIT_SAFE });
 
   // Responder inmediatamente — el cálculo corre en background
   res.json({ accepted: true, from: currentMax, newTarget, expandStep: EXPAND_STEP });

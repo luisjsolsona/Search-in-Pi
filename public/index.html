@@ -329,7 +329,7 @@ footer b{color:#336644}
       +500K
     </button>
     <button class="btn-expand btn-expand-max" id="btn-expand-max" onclick="expandPiMax()" title="Calcular hasta 50.000.000 decimales de una vez" disabled>
-      +50M
+      <span id="btn-max-label">+50M</span>
     </button>
     <div class="dot" id="dot"></div><span id="stxt">…</span>
   </div>
@@ -426,7 +426,9 @@ let piDec      = '';
 let loaded     = 0;
 let serverMax  = 0;
 let serverMode = false;
-let busy       = false;
+let busy           = false;
+let serverHardLimit = 50_000_000; // se actualiza desde /api/status
+let serverRamGB     = null;
 let matches    = [];      // posiciones 1-based
 let mIdx       = 0;       // índice activo en modal
 let lastQ      = '';
@@ -460,8 +462,9 @@ function activateUI() {
   setStatus('ok', 'LISTO');
   // Habilitar botón expand solo en modo servidor
   if (serverMode) {
-    $('btn-expand').disabled     = serverMax >= 50_000_000;
-    $('btn-expand-max').disabled = serverMax >= 50_000_000;
+    $('btn-expand').disabled     = serverMax >= serverHardLimit;
+    $('btn-expand-max').disabled = serverMax >= serverHardLimit;
+    updateMaxBtn();
   }
   $('q').focus();
 }
@@ -683,7 +686,10 @@ async function detectMode() {
     const r = await fetch('/api/status', { signal: AbortSignal.timeout(2000) });
     if (!r.ok) throw new Error();
     const d = await r.json();
-    serverMax  = d.currentMax || d.maxDigits || 100_000;
+    serverMax       = d.currentMax || d.maxDigits || 100_000;
+    serverHardLimit = d.hardLimit   || 50_000_000;
+    serverRamGB     = d.ramGB       || null;
+    updateMaxBtn();
     serverMode = true;
     return true;
   } catch {
@@ -697,7 +703,13 @@ async function waitServerReady() {
     try {
       const r = await fetch('/api/status');
       const d = await r.json();
-      if (d.ready) { serverMax = d.currentMax || d.totalDigits; return true; }
+      if (d.ready) {
+        serverMax       = d.currentMax || d.totalDigits;
+        serverHardLimit = d.hardLimit  || serverHardLimit;
+        serverRamGB     = d.ramGB      || null;
+        updateMaxBtn();
+        return true;
+      }
     } catch {}
     setStatus('go', 'SERVIDOR…');
     $('hsub').textContent = `Servidor calculando π… (${i * 5}s)`;
@@ -1002,10 +1014,11 @@ async function loadNewDecimals(target) {
 
 async function expandPiMax() {
   if (!serverMode) return;
-  const target = 50_000_000;
+  const target = serverHardLimit;
   if (serverMax >= target) return;
   const diff = target - serverMax;
-  if (!confirm(`¿Calcular hasta 50.000.000 decimales de π?\n\nEsto añadirá ${diff.toLocaleString('es')} decimales.\nEl cálculo puede tardar varias horas según el hardware.\n\nEl servidor seguirá disponible durante el proceso.`)) return;
+  const ramInfo = serverRamGB ? ` (RAM del servidor: ${serverRamGB} GB)` : '';
+  if (!confirm(`¿Calcular hasta ${fn(target)} decimales de π?\n\nEsto añadirá ${fn(diff)} decimales${ramInfo}.\nEl cálculo puede tardar varias horas según el hardware.\n\nEl servidor seguirá disponible durante el proceso.`)) return;
 
   const btn = $('btn-expand-max');
   btn.disabled = true;
@@ -1076,12 +1089,23 @@ function startExpandPollMax(finalTarget) {
           renderBanner();
           $('btn-expand-max').classList.remove('expanding');
           $('btn-expand-max').textContent = '+50M';
-          $('btn-expand-max').disabled = true; // ya llegó al límite
-          $('btn-expand').disabled = true;
+          $('btn-expand-max').disabled = serverMax >= serverHardLimit;
+          $('btn-expand').disabled     = serverMax >= serverHardLimit;
         }, 1200);
       }
     } catch(e) {}
   }, 5000);
+}
+
+function updateMaxBtn() {
+  const lbl = $('btn-max-label');
+  if (lbl) {
+    if (serverHardLimit >= 1_000_000_000) lbl.textContent = '+1B';
+    else if (serverHardLimit >= 1_000_000) lbl.textContent = '+' + Math.round(serverHardLimit/1_000_000) + 'M';
+    else lbl.textContent = '+' + fn(serverHardLimit);
+  }
+  const btnMax = $('btn-expand-max');
+  if (btnMax) btnMax.title = `Calcular hasta ${fn(serverHardLimit)} decimales (límite según RAM del servidor)`;
 }
 
 function closeExpandModal() {
