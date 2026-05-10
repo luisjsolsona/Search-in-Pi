@@ -259,6 +259,50 @@ footer b{color:#336644}
 .mr-nav-btn:disabled{opacity:.2;cursor:default}
 .mr-nav-info{color:var(--gd);font-size:.7rem;text-align:center}
 
+/* BOTÓN EXPAND */
+.btn-expand{
+  background:transparent;border:1px solid var(--b);color:var(--b);
+  font-family:'Orbitron',sans-serif;font-size:.52rem;font-weight:700;
+  letter-spacing:1px;padding:5px 9px;cursor:pointer;border-radius:2px;
+  min-height:32px;transition:all .15s;white-space:nowrap;
+  -webkit-tap-highlight-color:transparent;
+}
+.btn-expand:hover:not(:disabled),.btn-expand:active:not(:disabled){background:var(--b);color:#000}
+.btn-expand:disabled{opacity:.22;cursor:default}
+.btn-expand.expanding{border-color:var(--y);color:var(--y);animation:blink .7s ease-in-out infinite}
+
+/* MODAL EXPANSIÓN */
+#modal-expand{
+  position:fixed;inset:0;z-index:1002;
+  background:rgba(5,15,10,.93);backdrop-filter:blur(8px);
+  display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;
+}
+#modal-expand.show{display:flex}
+.me-box{
+  background:#081510;border:1px solid var(--b);border-radius:8px;
+  padding:30px 32px;width:min(440px,90vw);
+  display:flex;flex-direction:column;align-items:center;gap:16px;
+  box-shadow:0 0 40px rgba(0,204,255,.15);
+}
+.me-title{font-family:'Orbitron',sans-serif;font-size:clamp(.65rem,.2rem+1.4vw,.85rem);
+  color:var(--b);letter-spacing:3px;text-align:center}
+.me-from-to{display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:center}
+.me-num{font-family:'Orbitron',sans-serif;font-size:clamp(1rem,.4rem+2vw,1.4rem);
+  font-weight:700;text-align:center}
+.me-num.from{color:#336655}.me-num.to{color:var(--g);text-shadow:0 0 12px var(--g)}
+.me-arrow{color:var(--b);font-size:1.4rem}
+.me-ring{width:60px;height:60px;border-radius:50%;
+  border:3px solid #0a2a1a;border-top-color:var(--b);
+  animation:spin .8s linear infinite}
+.me-detail{font-size:clamp(.58rem,.15rem+1vw,.7rem);color:#336655;
+  letter-spacing:1px;text-align:center;line-height:1.6}
+.me-bar-wrap{width:100%;height:4px;background:#0a2a1a;border-radius:2px;overflow:hidden}
+.me-bar{height:100%;background:var(--b);border-radius:2px;transition:width .4s;width:3%}
+.me-cancel{background:transparent;border:1px solid #336644;color:#336644;
+  font-family:'Orbitron',sans-serif;font-size:.55rem;letter-spacing:1px;
+  padding:7px 14px;cursor:pointer;border-radius:2px;transition:all .15s}
+.me-cancel:hover{border-color:var(--r);color:var(--r)}
+
 /* ═══ BREAKPOINTS ═══ */
 @media(min-width:480px){.slbl{display:flex}.fhide{display:inline}footer{gap:10px}}
 @media(min-width:768px){
@@ -278,7 +322,12 @@ footer b{color:#336644}
     <div class="htitle">Search in π</div>
     <div class="hsub" id="hsub">conectando…</div>
   </div>
-  <div class="spill"><div class="dot" id="dot"></div><span id="stxt">…</span></div>
+  <div class="spill">
+    <button class="btn-expand" id="btn-expand" onclick="expandPi()" title="Calcular 500.000 decimales más en el servidor" disabled>
+      +500K
+    </button>
+    <div class="dot" id="dot"></div><span id="stxt">…</span>
+  </div>
 </header>
 
 <!-- BÚSQUEDA -->
@@ -336,6 +385,28 @@ footer b{color:#336644}
   </div>
 </div>
 
+<!-- MODAL: EXPANDIENDO π -->
+<div id="modal-expand">
+  <div class="me-box">
+    <div class="me-title">AMPLIANDO π</div>
+    <div class="me-from-to">
+      <div>
+        <div style="font-size:.55rem;color:#336655;letter-spacing:1px;margin-bottom:4px">ACTUAL</div>
+        <div class="me-num from" id="me-from">—</div>
+      </div>
+      <div class="me-arrow">→</div>
+      <div>
+        <div style="font-size:.55rem;color:#336655;letter-spacing:1px;margin-bottom:4px">NUEVO LÍMITE</div>
+        <div class="me-num to" id="me-to">—</div>
+      </div>
+    </div>
+    <div class="me-ring"></div>
+    <div class="me-detail" id="me-detail">Calculando con algoritmo Chudnovsky…<br>El servidor continuará disponible durante el cálculo.</div>
+    <div class="me-bar-wrap"><div class="me-bar" id="me-bar"></div></div>
+    <button class="me-cancel" onclick="closeExpandModal()">CERRAR (el cálculo sigue en segundo plano)</button>
+  </div>
+</div>
+
 <script>
 /* ════════════════════════════════════════════════
    CONFIG
@@ -382,6 +453,10 @@ function activateUI() {
   $('q').disabled      = false;
   $('bbuscar').disabled = false;
   setStatus('ok', 'LISTO');
+  // Habilitar botón expand solo en modo servidor
+  if (serverMode) {
+    $('btn-expand').disabled = serverMax >= 50_000_000;
+  }
   $('q').focus();
 }
 
@@ -602,7 +677,7 @@ async function detectMode() {
     const r = await fetch('/api/status', { signal: AbortSignal.timeout(2000) });
     if (!r.ok) throw new Error();
     const d = await r.json();
-    serverMax  = d.maxDigits || 100_000;
+    serverMax  = d.currentMax || d.maxDigits || 100_000;
     serverMode = true;
     return true;
   } catch {
@@ -616,7 +691,7 @@ async function waitServerReady() {
     try {
       const r = await fetch('/api/status');
       const d = await r.json();
-      if (d.ready) { serverMax = d.totalDigits; return true; }
+      if (d.ready) { serverMax = d.currentMax || d.totalDigits; return true; }
     } catch {}
     setStatus('go', 'SERVIDOR…');
     $('hsub').textContent = `Servidor calculando π… (${i * 5}s)`;
@@ -819,6 +894,109 @@ async function buscar() {
    ENTER
 ════════════════════════════════════════════════ */
 $('q').addEventListener('keydown', e => { if (e.key === 'Enter') buscar(); });
+
+/* ════════════════════════════════════════════════
+   EXPANSIÓN DINÁMICA DE π
+════════════════════════════════════════════════ */
+let expandPollTimer = null;
+let meBarPct = 3;
+let meBarTimer = null;
+
+async function expandPi() {
+  if (!serverMode) return;
+  const btn = $('btn-expand');
+  btn.disabled = true;
+
+  try {
+    const r = await fetch('/api/expand', { method: 'POST' });
+    const d = await r.json();
+    if (!r.ok) {
+      alert(d.error || 'Error al expandir');
+      btn.disabled = false;
+      return;
+    }
+    // Mostrar modal
+    $('me-from').textContent = fn(d.from) + ' dec.';
+    $('me-to').textContent   = fn(d.newTarget) + ' dec.';
+    $('me-bar').style.width  = '3%';
+    $('me-detail').innerHTML = 'Calculando con algoritmo Chudnovsky…<br>El servidor continúa disponible durante el cálculo.';
+    $('modal-expand').classList.add('show');
+    btn.classList.add('expanding');
+    btn.textContent = 'CALCULANDO…';
+
+    // Barra de progreso falsa (el cálculo no reporta %)
+    meBarPct = 3;
+    clearInterval(meBarTimer);
+    meBarTimer = setInterval(() => {
+      meBarPct = Math.min(92, meBarPct + (meBarPct < 60 ? 0.6 : 0.05));
+      $('me-bar').style.width = meBarPct + '%';
+    }, 500);
+
+    // Polling hasta que el servidor termine
+    startExpandPoll(d.newTarget);
+  } catch(e) {
+    alert('Error de red: ' + e.message);
+    btn.disabled = false;
+  }
+}
+
+function startExpandPoll(target) {
+  clearInterval(expandPollTimer);
+  let elapsed = 0;
+  expandPollTimer = setInterval(async () => {
+    elapsed += 5;
+    try {
+      const r = await fetch('/api/status');
+      const d = await r.json();
+      $('me-detail').innerHTML =
+        `Calculando con algoritmo Chudnovsky…<br>` +
+        `${fn(d.currentMax || 0)} / ${fn(target)} decimales · ${elapsed}s transcurridos`;
+
+      if (!d.expanding && d.currentMax >= target) {
+        // ¡Terminó!
+        clearInterval(expandPollTimer);
+        clearInterval(meBarTimer);
+        $('me-bar').style.width = '100%';
+        $('me-detail').innerHTML =
+          `✓ <strong style="color:var(--g)">${fn(target)}</strong> decimales disponibles.<br>` +
+          `Cargando en el display…`;
+
+        // Actualizar estado local
+        serverMax = target;
+        updateFooter();
+
+        // Cargar los nuevos decimales
+        await loadNewDecimals(target);
+
+        setTimeout(() => {
+          closeExpandModal();
+          renderBanner();
+          const btn = $('btn-expand');
+          btn.classList.remove('expanding');
+          btn.textContent = '+500K';
+          btn.disabled = serverMax >= 50_000_000;
+        }, 1200);
+      }
+    } catch(e) { /* red ocupada, reintentar */ }
+  }, 5000);
+}
+
+async function loadNewDecimals(target) {
+  // Cargar los decimales que aún no tenemos
+  if (loaded >= target) return;
+  try {
+    const chunk = await loadFromServer(loaded, target - loaded);
+    piDec  += chunk;
+    loaded  = target;
+    updateFooter();
+    renderText(lastMS, mIdx);
+    renderBanner();
+  } catch(e) { console.error('Error cargando nuevos decimales:', e); }
+}
+
+function closeExpandModal() {
+  $('modal-expand').classList.remove('show');
+}
 
 function scrollTop() {
   const pc = $('pc');
