@@ -340,8 +340,8 @@ footer b{color:#336644}
 /* ════════════════════════════════════════════════
    CONFIG
 ════════════════════════════════════════════════ */
-const INIT_COUNT  = 10_000;
-const CHUNK_COUNT = 50_000;
+const INIT_COUNT  = 1_000_000;
+const CHUNK_COUNT = 1_000_000;
 
 /* ════════════════════════════════════════════════
    ESTADO
@@ -586,12 +586,11 @@ function renderBanner() {
   b.style.display = 'flex';
   b.innerHTML = `
     <span class="bb-info">
-      Mostrando <strong>${fn(loaded)}</strong> de <strong>${fn(serverMax)}</strong> dec.
-      · Siguiente bloque hasta <strong>${fn(next)}</strong>
+      Mostrando <strong>${fn(loaded)}</strong> de <strong>${fn(serverMax)}</strong> decimales disponibles
     </span>
     <button class="bo" style="font-size:.52rem;padding:7px 10px;min-height:36px"
       onclick="loadBlockAndRefresh()" ${busy ? 'disabled' : ''}>
-      +${fn(Math.min(CHUNK_COUNT, serverMax - loaded))}
+      CARGAR TODO (+${fn(serverMax - loaded)})
     </button>`;
 }
 
