@@ -1,5 +1,3 @@
-version: "3.8"
-
 # ═══════════════════════════════════════════════════════════
 #  Search-in-Pi — docker-compose
 #  Compatible con CasaOS (importar como App personalizada)
@@ -7,9 +5,7 @@ version: "3.8"
 
 services:
   search-in-pi:
-    image: ghcr.io/luisjsolsona/search-in-pi:latest
-    # O construir localmente:
-    # build: .
+    build: .
     container_name: search-in-pi
     restart: unless-stopped
 
@@ -17,10 +13,8 @@ services:
       - "3141:3141"   # Puerto π :)
 
     environment:
-      # Puerto interno del servidor
       - PORT=3141
-      # Decimales de π a calcular al arrancar.
-      # Valores recomendados según RAM disponible:
+      # Decimales de π a calcular al arrancar:
       #   100000  →  ~256MB RAM, ~5s cálculo
       #   500000  →  ~1GB RAM,   ~60s cálculo
       #   1000000 →  ~2GB RAM,   ~4min cálculo
@@ -31,16 +25,14 @@ services:
     labels:
       - "casaos.author=luisjsolsona"
       - "casaos.category=Utilities"
-      - "casaos.description=Buscador de secuencias numéricas en los decimales de π. Calcula hasta 1.000.000 decimales con el algoritmo Chudnovsky."
+      - "casaos.description=Buscador de secuencias numéricas en los decimales de π."
       - "casaos.hostname=search-in-pi"
       - "casaos.icon=https://raw.githubusercontent.com/luisjsolsona/Search-in-Pi/main/public/icon.svg"
       - "casaos.index=/index.html"
       - "casaos.port_map=3141"
       - "casaos.scheme=http"
       - "casaos.title=Search in Pi"
-      - "casaos.tips.before_install=Ajusta MAX_DIGITS según tu RAM disponible. 100000 = mínimo recomendado."
 
-    # Límites de recursos (ajusta según tu servidor)
     deploy:
       resources:
         limits:
@@ -48,7 +40,6 @@ services:
         reservations:
           memory: 128M
 
-    # Health check
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3141/api/status"]
       interval: 15s
@@ -69,12 +60,5 @@ x-casaos:
     custom: Search in Pi
   icon: https://raw.githubusercontent.com/luisjsolsona/Search-in-Pi/main/public/icon.svg
   description:
-    es_es: Buscador de secuencias numéricas en los decimales de π. Calcula hasta 1.000.000 decimales con el algoritmo Chudnovsky directamente en tu servidor.
-    en_us: Search for numeric sequences in the decimals of π. Computes up to 1,000,000 decimal places using the Chudnovsky algorithm on your own server.
-  tips:
-    before_install:
-      es_es: |
-        Ajusta MAX_DIGITS según tu RAM disponible:
-        • 100.000 → ~256MB RAM, ~5s de cálculo
-        • 500.000 → ~1GB RAM, ~60s de cálculo
-        • 1.000.000 → ~2GB RAM, ~4min de cálculo
+    es_es: Buscador de secuencias numéricas en los decimales de π. Calcula hasta 1.000.000 decimales con Chudnovsky.
+    en_us: Search for numeric sequences in the decimals of π. Up to 1,000,000 decimal places using Chudnovsky.
