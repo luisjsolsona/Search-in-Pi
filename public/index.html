@@ -14,14 +14,12 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;height:100dvh}
 body{
-  background:var(--bg);color:var(--txt);
-  font-family:'Share Tech Mono',monospace;
+  background:var(--bg);color:var(--txt);font-family:'Share Tech Mono',monospace;
   display:flex;flex-direction:column;overflow:hidden;
-  padding-left:env(safe-area-inset-left);
-  padding-right:env(safe-area-inset-right);
+  padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);
 }
 body::before{
-  content:'';position:fixed;inset:0;pointer-events:none;z-index:900;opacity:.3;
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:900;opacity:.28;
   background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E")
 }
 body::after{
@@ -34,19 +32,18 @@ header{
   flex-shrink:0;background:var(--bg2);border-bottom:1px solid var(--brd);
   padding:10px 14px 8px;display:flex;align-items:center;gap:10px;
 }
-.logo-wrap{flex-shrink:0;width:clamp(32px,8vw,46px);height:clamp(32px,8vw,46px)}
+.logo-wrap{flex-shrink:0;width:clamp(30px,7vw,44px);height:clamp(30px,7vw,44px)}
 .logo-wrap img{width:100%;height:100%;display:block}
 .hinfo{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
 .htitle{
   font-family:'Orbitron',sans-serif;color:var(--gd);text-transform:uppercase;
   letter-spacing:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  font-size:clamp(.44rem,.08rem + 1.5vw,.62rem);
+  font-size:clamp(.42rem,.06rem + 1.5vw,.6rem);
 }
-.hsub{
-  color:#336655;letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  font-size:clamp(.52rem,.08rem + 1.2vw,.66rem);
-}
-.spill{flex-shrink:0;display:flex;align-items:center;gap:7px;font-size:clamp(.52rem,.08rem + 1.1vw,.66rem);color:var(--gd)}
+.hsub{color:#336655;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  font-size:clamp(.5rem,.06rem + 1.2vw,.64rem);}
+.spill{flex-shrink:0;display:flex;align-items:center;gap:7px;
+  font-size:clamp(.5rem,.06rem + 1.1vw,.64rem);color:var(--gd)}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--y);box-shadow:0 0 7px var(--y);
   animation:blink 1s ease-in-out infinite;transition:background .3s,box-shadow .3s;flex-shrink:0}
 .dot.ok{background:var(--g);box-shadow:0 0 7px var(--g);animation:none}
@@ -57,16 +54,16 @@ header{
 /* ═══ SEARCH ZONE ═══ */
 .sz{
   flex-shrink:0;background:var(--bg2);border-bottom:1px solid var(--brd);
-  padding:10px 14px 8px;display:flex;flex-direction:column;align-items:stretch;gap:8px;
+  padding:10px 14px 8px;display:flex;flex-direction:column;align-items:stretch;gap:7px;
 }
 .sr{display:flex;gap:6px;align-items:stretch;width:100%}
-.slbl{display:none;font-family:'Orbitron',sans-serif;font-size:.52rem;
+.slbl{display:none;font-family:'Orbitron',sans-serif;font-size:.5rem;
   color:var(--gd);letter-spacing:2px;white-space:nowrap;align-self:center}
 input[type=text]{
   flex:1;min-width:0;background:#000;border:1px solid var(--gd);color:var(--g);
-  font-family:'Share Tech Mono',monospace;padding:11px 12px;outline:none;
+  font-family:'Share Tech Mono',monospace;padding:10px 12px;outline:none;
   letter-spacing:3px;border-radius:2px;transition:border-color .2s,box-shadow .2s;
-  font-size:clamp(.9rem,.4rem + 2.2vw,1.25rem);-webkit-appearance:none;appearance:none;
+  font-size:clamp(.88rem,.38rem + 2.1vw,1.2rem);-webkit-appearance:none;appearance:none;
 }
 input:focus{border-color:var(--g);box-shadow:0 0 10px var(--gd),inset 0 0 6px rgba(0,255,136,.04)}
 input::placeholder{color:#1a4433;letter-spacing:1px}
@@ -75,76 +72,194 @@ input::placeholder{color:#1a4433;letter-spacing:1px}
   white-space:nowrap;min-height:44px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;
   transition:background .15s,box-shadow .15s,color .15s;
 }
-.bp{background:var(--g);color:#000;border:none;font-size:clamp(.55rem,.2rem + 1.3vw,.65rem);letter-spacing:1px;padding:0 14px}
+.bp{background:var(--g);color:#000;border:none;
+  font-size:clamp(.53rem,.18rem + 1.3vw,.64rem);letter-spacing:1px;padding:0 14px}
 .bp:active,.bp:hover{background:#fff;box-shadow:0 0 14px var(--g)}
 .bp:disabled{background:#1a3328;color:#2a5540;cursor:default;box-shadow:none}
 .bo{background:transparent;border:1px solid var(--b);color:var(--b);
-  font-size:clamp(.5rem,.18rem + 1.2vw,.6rem);letter-spacing:1px;padding:0 10px}
+  font-size:clamp(.48rem,.16rem + 1.1vw,.58rem);letter-spacing:1px;padding:0 10px}
 .bo:active:not(:disabled),.bo:hover:not(:disabled){background:var(--b);color:#000}
 .bo:disabled{opacity:.22;cursor:default}
 
-/* RESULTS BAR */
-.rb{width:100%;font-size:clamp(.58rem,.12rem + 1.2vw,.7rem);letter-spacing:.3px;
-  display:flex;gap:6px;align-items:center;flex-wrap:wrap;line-height:1.5;min-height:20px}
-.rc{color:var(--y)}.rp{color:var(--txt)}
-.rn{margin-left:auto;display:flex;gap:4px;align-items:center}
-.bn{background:transparent;border:1px solid var(--gd);color:var(--gd);
-  font-family:'Share Tech Mono',monospace;font-size:clamp(.6rem,.2rem + 1.1vw,.7rem);
-  padding:6px 11px;cursor:pointer;border-radius:2px;min-height:36px;min-width:36px;
-  -webkit-tap-highlight-color:transparent;touch-action:manipulation}
-.bn:active:not(:disabled),.bn:hover:not(:disabled){border-color:var(--g);color:var(--g)}
-.bn:disabled{opacity:.18;cursor:default}
-.bn.bl{border-color:var(--b);color:var(--b)}
-.bn.bl:active:not(:disabled),.bn.bl:hover:not(:disabled){background:var(--b);color:#000}
-.ni{color:var(--gd);font-size:clamp(.58rem,.15rem + 1vw,.66rem);min-width:55px;text-align:center}
-
-/* PI DISPLAY */
-.pc{flex:1;overflow-y:auto;overflow-x:hidden;padding:12px 12px 0;background:var(--bg);
-  -webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+/* ═══ PI DISPLAY ═══ */
+.pc{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  padding:10px 12px 0;background:var(--bg);
+  -webkit-overflow-scrolling:touch;overscroll-behavior:contain;
+}
 .pc::-webkit-scrollbar{width:4px}
 .pc::-webkit-scrollbar-track{background:#050f0a}
 .pc::-webkit-scrollbar-thumb{background:#00ff8828;border-radius:3px}
-#pt{font-size:clamp(.65rem,.2rem + 1.5vw,.8rem);line-height:1.95;word-break:break-all;
-  white-space:pre-wrap;color:#3a8a60;user-select:text}
+
+/* TEXTO DE π — continuo, sin grupos, anchura completa */
+#pt{
+  font-size:clamp(.65rem,.18rem + 1.5vw,.82rem);
+  line-height:1.9;
+  word-break:break-all;     /* rompe donde haga falta para ocupar todo el ancho */
+  white-space:normal;       /* NO pre-wrap: fluye naturalmente */
+  color:#3a8a60;
+  user-select:text;
+  width:100%;
+}
 mark.hi{background:var(--y);color:#000;border-radius:2px;padding:0 1px}
-mark.hi.cur{background:var(--r);color:#fff;box-shadow:0 0 9px var(--r)}
+mark.hi.cur{background:var(--r);color:#fff;box-shadow:0 0 10px var(--r)}
 
-/* PROGRESS */
-#prog-block{margin:12px 0 8px;display:none;flex-direction:column;gap:6px}
-.pb-lbl{font-size:clamp(.58rem,.12rem + 1.1vw,.67rem);color:var(--b);letter-spacing:.5px;line-height:1.4}
-.pb-wrap{height:4px;background:#0a2a1a;border-radius:2px;overflow:hidden}
-.pb-bar{height:100%;background:var(--b);border-radius:2px;transition:width .4s;width:0%}
-.pb-eta{font-size:clamp(.52rem,.1rem + 1vw,.6rem);color:#2a6688;letter-spacing:.5px}
-
-/* BOTTOM BANNER */
-#bbanner{margin:10px 0 14px;padding:10px 12px;border-radius:3px;
+/* banner inferior */
+#bbanner{
+  margin:10px 0 12px;padding:9px 12px;border-radius:3px;
   border:1px solid #1a3344;background:rgba(0,100,150,.05);
-  display:none;align-items:center;gap:10px;flex-wrap:wrap}
-.bb-info{font-size:clamp(.58rem,.12rem + 1.1vw,.66rem);color:#4488aa;letter-spacing:.3px;flex:1;line-height:1.5}
+  display:none;align-items:center;gap:10px;flex-wrap:wrap;
+}
+.bb-info{font-size:clamp(.56rem,.1rem + 1vw,.64rem);color:#4488aa;flex:1;line-height:1.5}
 .bb-info strong{color:#aaddff}
 
-/* SERVER BADGE */
-#srv-badge{
-  position:fixed;bottom:calc(30px + env(safe-area-inset-bottom));right:12px;
-  background:rgba(5,15,10,.85);border:1px solid #00ff8830;border-radius:4px;
-  padding:4px 8px;font-size:.55rem;color:#1a5533;z-index:100;
-  display:flex;align-items:center;gap:6px;backdrop-filter:blur(4px);
-}
-#srv-badge.server{border-color:#00ff8860;color:var(--gd)}
-
-/* FOOTER */
+/* ═══ FOOTER ═══ */
 footer{
   flex-shrink:0;background:var(--bg2);border-top:1px solid var(--brd);
   padding:5px 12px;padding-bottom:calc(5px + env(safe-area-inset-bottom));
   display:flex;gap:8px;align-items:center;
-  font-size:clamp(.52rem,.08rem + 1.1vw,.62rem);color:#1a5533;letter-spacing:.3px;
+  font-size:clamp(.5rem,.06rem + 1vw,.6rem);color:#1a5533;
 }
 footer b{color:#336644}
 .fw{flex:1;min-width:30px;height:3px;background:#0a2a1a;border-radius:2px;overflow:hidden}
-.fb{height:100%;background:var(--g);border-radius:2px;transition:width .5s;width:0%}
+.fb2{height:100%;background:var(--g);border-radius:2px;transition:width .5s;width:0%}
 .fhide{display:none}
 
-/* BREAKPOINTS */
+/* ═══ MODAL: BUSCANDO ═══ */
+#modal-search{
+  position:fixed;inset:0;z-index:1000;
+  background:rgba(5,15,10,.92);backdrop-filter:blur(6px);
+  display:none;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+}
+#modal-search.show{display:flex}
+.ms-ring{
+  width:80px;height:80px;border-radius:50%;
+  border:4px solid #0a2a1a;border-top-color:var(--b);
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ms-pi{
+  font-family:'Orbitron',sans-serif;font-size:2.5rem;font-weight:900;
+  color:var(--g);text-shadow:0 0 20px var(--g),0 0 40px var(--gd);
+  animation:pulse-pi 1.2s ease-in-out infinite;
+}
+@keyframes pulse-pi{0%,100%{text-shadow:0 0 20px var(--g),0 0 40px var(--gd)}50%{text-shadow:0 0 40px var(--g),0 0 80px var(--gd),0 0 120px #00ff8840}}
+.ms-label{
+  font-family:'Orbitron',sans-serif;font-size:clamp(.7rem,.3rem + 1.5vw,.95rem);
+  color:var(--b);letter-spacing:3px;text-align:center;
+}
+.ms-detail{font-size:clamp(.58rem,.2rem + 1vw,.72rem);color:#336655;letter-spacing:1px;text-align:center}
+.ms-bar-wrap{width:min(320px,80vw);height:5px;background:#0a2a1a;border-radius:3px;overflow:hidden}
+.ms-bar{height:100%;background:var(--b);border-radius:3px;transition:width .4s;width:5%}
+
+/* ═══ MODAL: RESULTADOS ═══ */
+#modal-result{
+  position:fixed;inset:0;z-index:1001;
+  background:rgba(3,10,6,.95);backdrop-filter:blur(8px);
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  padding:20px;
+}
+#modal-result.show{display:flex}
+.mr-box{
+  background:#081510;border:1px solid var(--g);border-radius:8px;
+  width:100%;max-width:640px;max-height:90dvh;
+  display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:0 0 40px rgba(0,255,136,.15);
+}
+.mr-head{
+  padding:18px 20px 14px;border-bottom:1px solid #00ff8820;
+  display:flex;align-items:center;gap:14px;flex-shrink:0;
+}
+.mr-pi{
+  font-family:'Orbitron',sans-serif;font-size:2rem;font-weight:900;
+  color:var(--g);text-shadow:0 0 16px var(--g);line-height:1;flex-shrink:0;
+}
+.mr-title-wrap{flex:1;min-width:0}
+.mr-title{
+  font-family:'Orbitron',sans-serif;font-size:clamp(.5rem,.15rem + 1.4vw,.75rem);
+  color:var(--g);letter-spacing:2px;text-transform:uppercase;
+}
+.mr-q{
+  font-family:'Orbitron',sans-serif;font-size:clamp(.8rem,.3rem + 2.2vw,1.4rem);
+  color:var(--y);letter-spacing:6px;font-weight:700;margin-top:4px;
+  text-shadow:0 0 12px var(--y);
+}
+.mr-close{
+  flex-shrink:0;background:transparent;border:1px solid #336644;color:#336644;
+  font-family:'Orbitron',sans-serif;font-size:.6rem;letter-spacing:1px;
+  padding:8px 12px;cursor:pointer;border-radius:2px;min-height:36px;
+  transition:all .15s;-webkit-tap-highlight-color:transparent;
+}
+.mr-close:hover,.mr-close:active{border-color:var(--r);color:var(--r)}
+
+.mr-stats{
+  padding:16px 20px;border-bottom:1px solid #00ff8815;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:12px;flex-shrink:0;
+}
+.mr-stat{display:flex;flex-direction:column;gap:3px}
+.mr-stat-label{font-size:clamp(.5rem,.12rem + .9vw,.6rem);color:#336655;letter-spacing:1px;text-transform:uppercase}
+.mr-stat-val{
+  font-family:'Orbitron',sans-serif;font-size:clamp(.8rem,.3rem + 1.8vw,1.1rem);
+  font-weight:700;letter-spacing:1px;
+}
+.mr-stat-val.green{color:var(--g);text-shadow:0 0 10px var(--g)}
+.mr-stat-val.yellow{color:var(--y);text-shadow:0 0 10px var(--y)}
+.mr-stat-val.blue{color:var(--b);text-shadow:0 0 10px var(--b)}
+.mr-stat-val.red{color:var(--r);text-shadow:0 0 10px var(--r)}
+
+.mr-list-head{
+  padding:10px 20px 6px;
+  font-size:clamp(.5rem,.1rem + .9vw,.6rem);color:#336655;letter-spacing:1px;
+  flex-shrink:0;
+}
+.mr-list{
+  flex:1;overflow-y:auto;padding:0 20px 16px;
+  display:flex;flex-direction:column;gap:6px;
+  -webkit-overflow-scrolling:touch;
+}
+.mr-list::-webkit-scrollbar{width:4px}
+.mr-list::-webkit-scrollbar-track{background:#050f0a}
+.mr-list::-webkit-scrollbar-thumb{background:#00ff8830;border-radius:3px}
+
+.mr-item{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 12px;border-radius:3px;
+  background:#050f0a;border:1px solid #0a2a1a;
+  cursor:pointer;transition:border-color .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.mr-item:hover,.mr-item:active{border-color:var(--g)}
+.mr-item.active{border-color:var(--r);background:#1a0408}
+.mr-item-n{
+  font-family:'Orbitron',sans-serif;font-size:.58rem;
+  color:#336644;min-width:28px;text-align:right;
+}
+.mr-item-pos{
+  font-size:clamp(.65rem,.2rem + 1.2vw,.8rem);color:var(--g);
+  font-family:'Orbitron',sans-serif;font-weight:700;letter-spacing:1px;
+}
+.mr-item-ctx{
+  flex:1;font-size:clamp(.6rem,.18rem + 1vw,.72rem);color:#3a5a48;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.mr-item-ctx mark{background:var(--y);color:#000;border-radius:1px;padding:0 1px}
+.mr-item-ctx mark.cur{background:var(--r);color:#fff}
+.mr-nav{
+  padding:12px 20px;border-top:1px solid #00ff8815;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;flex-shrink:0;
+}
+.mr-nav-btn{
+  background:transparent;border:1px solid var(--gd);color:var(--gd);
+  font-family:'Share Tech Mono',monospace;font-size:.75rem;
+  padding:8px 16px;cursor:pointer;border-radius:2px;min-height:38px;
+  transition:all .15s;-webkit-tap-highlight-color:transparent;
+}
+.mr-nav-btn:hover:not(:disabled),.mr-nav-btn:active:not(:disabled){border-color:var(--g);color:var(--g)}
+.mr-nav-btn:disabled{opacity:.2;cursor:default}
+.mr-nav-info{color:var(--gd);font-size:.7rem;text-align:center}
+
+/* ═══ BREAKPOINTS ═══ */
 @media(min-width:480px){.slbl{display:flex}.fhide{display:inline}footer{gap:10px}}
 @media(min-width:768px){
   header{padding:12px 22px 10px;gap:14px}.sz{padding:12px 22px 10px;gap:9px}.sr{gap:8px}
@@ -156,98 +271,348 @@ footer b{color:#336644}
 </head>
 <body>
 
+<!-- HEADER -->
 <header>
   <div class="logo-wrap"><img src="/icon.svg" alt="Search in Pi"></div>
   <div class="hinfo">
-    <div class="htitle">Search in π · Bloques bajo demanda</div>
-    <div class="hsub" id="hsub">conectando con el servidor…</div>
+    <div class="htitle">Search in π</div>
+    <div class="hsub" id="hsub">conectando…</div>
   </div>
   <div class="spill"><div class="dot" id="dot"></div><span id="stxt">…</span></div>
 </header>
 
+<!-- BÚSQUEDA -->
 <div class="sz">
   <div class="sr">
     <span class="slbl">BUSCAR EN π</span>
-    <input type="text" id="q" placeholder="Ej: 271828" maxlength="20"
-           autocomplete="off" spellcheck="false" inputmode="numeric" disabled>
+    <input type="text" id="q" placeholder="Ej: 271828  ó  tu fecha de nacimiento"
+           maxlength="20" autocomplete="off" spellcheck="false" inputmode="numeric" disabled>
     <button class="bp" id="bbuscar" disabled onclick="buscar()">BUSCAR</button>
-    <button class="bo" id="bmas" disabled onclick="cargarMasYBuscar()">+BLOQUE</button>
-  </div>
-  <div class="rb" id="rbar">
-    <span style="color:#1a5533">Iniciando…</span>
   </div>
 </div>
 
+<!-- DISPLAY DE π -->
 <div class="pc" id="pc">
-  <div id="pt"><span style="color:#1a5533">▌ cargando π del servidor…</span></div>
-  <div id="prog-block">
-    <div class="pb-lbl" id="pblbl">Cargando…</div>
-    <div class="pb-wrap"><div class="pb-bar" id="pbbar"></div></div>
-    <div class="pb-eta" id="pbeta"></div>
-  </div>
+  <div id="pt"><span style="color:#1a5533">▌ cargando π…</span></div>
   <div id="bbanner"></div>
 </div>
 
+<!-- FOOTER -->
 <footer>
-  <b>CARGADOS:</b><span id="fc">—</span>
-  <span class="fhide">|</span>
-  <span class="fhide"><b>BUSCADOS:</b><span id="fb">—</span></span>
-  <span class="fhide">|</span>
-  <span class="fhide"><b>SERVIDOR:</b><span id="fmax">—</span></span>
-  <div class="fw"><div class="fb" id="fbar"></div></div>
+  <b>DEC:</b><span id="fc">—</span>
+  <span class="fhide">|</span><span class="fhide"><b>SERVIDOR:</b><span id="fmax">—</span></span>
+  <div class="fw"><div class="fb2" id="fbar"></div></div>
   <span id="fpct">0%</span>
 </footer>
 
-<div id="srv-badge">⚡ cliente JS</div>
+<!-- MODAL: BUSCANDO EN π -->
+<div id="modal-search">
+  <div class="ms-pi">π</div>
+  <div class="ms-ring"></div>
+  <div class="ms-label" id="ms-label">BUSCANDO EN π</div>
+  <div class="ms-detail" id="ms-detail">Iniciando búsqueda…</div>
+  <div class="ms-bar-wrap"><div class="ms-bar" id="ms-bar"></div></div>
+</div>
+
+<!-- MODAL: RESULTADOS -->
+<div id="modal-result">
+  <div class="mr-box">
+    <div class="mr-head">
+      <div class="mr-pi">π</div>
+      <div class="mr-title-wrap">
+        <div class="mr-title">Resultado de búsqueda</div>
+        <div class="mr-q" id="mr-q">—</div>
+      </div>
+      <button class="mr-close" onclick="closeResult()">✕ CERRAR</button>
+    </div>
+    <div class="mr-stats" id="mr-stats"></div>
+    <div class="mr-list-head" id="mr-list-head"></div>
+    <div class="mr-list" id="mr-list"></div>
+    <div class="mr-nav">
+      <button class="mr-nav-btn" id="mr-prev" onclick="navResult(-1)" disabled>◀ ANTERIOR</button>
+      <div class="mr-nav-info" id="mr-nav-info"></div>
+      <button class="mr-nav-btn" id="mr-next" onclick="navResult(1)" disabled>SIGUIENTE ▶</button>
+    </div>
+  </div>
+</div>
 
 <script>
-/* ════════════════════════════════════════════════════════════
-   CONFIGURACIÓN
-════════════════════════════════════════════════════════════ */
-const INIT_COUNT  = 10_000;   // decimales en la primera carga
-const CHUNK_COUNT = 50_000;   // decimales por bloque adicional
+/* ════════════════════════════════════════════════
+   CONFIG
+════════════════════════════════════════════════ */
+const INIT_COUNT  = 10_000;
+const CHUNK_COUNT = 50_000;
 
-/* ════════════════════════════════════════════════════════════
+/* ════════════════════════════════════════════════
    ESTADO
-════════════════════════════════════════════════════════════ */
-let piDec      = '';    // decimales acumulados del servidor
-let loaded     = 0;     // cuántos decimales tenemos
-let serverMax  = 0;     // cuántos tiene disponibles el servidor
-let serverMode = false; // true si usamos API, false si usamos Worker local
-let searched   = 0;
+════════════════════════════════════════════════ */
+let piDec      = '';
+let loaded     = 0;
+let serverMax  = 0;
+let serverMode = false;
 let busy       = false;
-let matches    = [];
-let mIdx       = 0;
+let matches    = [];      // posiciones 1-based
+let mIdx       = 0;       // índice activo en modal
 let lastQ      = '';
 let lastMS     = null;
+let progTimer  = null;
+let calcT0     = 0;
+let worker     = null;
 
-/* ════════════════════════════════════════════════════════════
-   DETECCIÓN DE MODO: servidor vs. standalone
-   Si /api/status responde → modo servidor
-   Si no → fallback a Web Worker local (Machin BigInt)
-════════════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════
+   HELPERS
+════════════════════════════════════════════════ */
+const $    = id => document.getElementById(id);
+const fn   = n  => n.toLocaleString('es');
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+function setStatus(cls, txt) {
+  $('dot').className = 'dot' + (cls ? ' ' + cls : '');
+  $('stxt').textContent = txt;
+}
+function updateFooter() {
+  const pct = Math.min(100, Math.round(loaded / serverMax * 100));
+  $('fc').textContent   = ' ' + fn(loaded);
+  $('fmax').textContent = ' ' + fn(serverMax) + ' dec.';
+  $('fbar').style.width = pct + '%';
+  $('fpct').textContent = pct + '%';
+  $('hsub').textContent = `${fn(loaded)} / ${fn(serverMax)} decimales`;
+}
+function activateUI() {
+  $('q').disabled      = false;
+  $('bbuscar').disabled = false;
+  setStatus('ok', 'LISTO');
+  $('q').focus();
+}
+
+/* ════════════════════════════════════════════════
+   MODAL BUSCANDO
+════════════════════════════════════════════════ */
+let msBarTimer = null;
+function showSearchModal(label, detail) {
+  $('ms-label').textContent  = label  || 'BUSCANDO EN π';
+  $('ms-detail').textContent = detail || '';
+  $('ms-bar').style.width = '5%';
+  $('modal-search').classList.add('show');
+  let pct = 5;
+  clearInterval(msBarTimer);
+  msBarTimer = setInterval(() => {
+    pct = Math.min(92, pct + (pct < 60 ? 1.2 : 0.15));
+    $('ms-bar').style.width = pct + '%';
+  }, 300);
+}
+function updateSearchModal(detail) {
+  $('ms-detail').textContent = detail;
+}
+function hideSearchModal() {
+  clearInterval(msBarTimer);
+  $('ms-bar').style.width = '100%';
+  setTimeout(() => $('modal-search').classList.remove('show'), 300);
+}
+
+/* ════════════════════════════════════════════════
+   MODAL RESULTADOS
+════════════════════════════════════════════════ */
+function showResult(q, positions, searchedDec) {
+  mIdx = 0;
+  $('mr-q').textContent = `«${q}»`;
+
+  // Stats
+  const found  = positions.length;
+  const first  = found > 0 ? positions[0] : null;
+  const last   = found > 0 ? positions[found - 1] : null;
+  const freq   = found > 0 ? (found / searchedDec * Math.pow(10, q.length)).toFixed(2) : '—';
+
+  $('mr-stats').innerHTML = `
+    <div class="mr-stat">
+      <div class="mr-stat-label">Apariciones</div>
+      <div class="mr-stat-val ${found > 0 ? 'green' : 'red'}">${found > 0 ? fn(found) : 'NO ENCONTRADO'}</div>
+    </div>
+    <div class="mr-stat">
+      <div class="mr-stat-label">Decimales buscados</div>
+      <div class="mr-stat-val blue">${fn(searchedDec)}</div>
+    </div>
+    ${first !== null ? `
+    <div class="mr-stat">
+      <div class="mr-stat-label">Primera posición</div>
+      <div class="mr-stat-val yellow">dec. ${fn(first)}</div>
+    </div>
+    <div class="mr-stat">
+      <div class="mr-stat-label">Última posición</div>
+      <div class="mr-stat-val yellow">dec. ${fn(last)}</div>
+    </div>` : ''}
+  `;
+
+  // Lista de posiciones
+  const SHOW_MAX = 200;
+  const shown = positions.slice(0, SHOW_MAX);
+  $('mr-list-head').textContent = found > 0
+    ? `Posiciones${positions.length > SHOW_MAX ? ` (mostrando primeras ${SHOW_MAX})` : ''} — pulsa para navegar`
+    : '';
+
+  if (found === 0) {
+    $('mr-list').innerHTML = `
+      <div style="padding:24px;text-align:center;color:#336644;font-size:.8rem;letter-spacing:1px">
+        «${q}» no aparece en los ${fn(searchedDec)} decimales buscados
+      </div>`;
+  } else {
+    $('mr-list').innerHTML = shown.map((pos, i) => {
+      const ctx = getContext(pos - 1, q.length);
+      return `<div class="mr-item${i === 0 ? ' active' : ''}" onclick="selectResult(${i})" id="mri-${i}">
+        <span class="mr-item-n">#${i + 1}</span>
+        <span class="mr-item-pos">dec. ${fn(pos)}</span>
+        <span class="mr-item-ctx">${ctx}</span>
+      </div>`;
+    }).join('');
+  }
+
+  // Nav
+  updateResultNav(found);
+  $('modal-result').classList.add('show');
+}
+
+function getContext(startIdx, qLen) {
+  // startIdx es índice en piDec (0-based), qLen = longitud query
+  const PRE = 8, POST = 8;
+  const from = Math.max(0, startIdx - PRE);
+  const to   = Math.min(piDec.length, startIdx + qLen + POST);
+  const before = piDec.slice(from, startIdx);
+  const match  = piDec.slice(startIdx, startIdx + qLen);
+  const after  = piDec.slice(startIdx + qLen, to);
+  const prefix = from > 0 ? '…' : '';
+  const suffix = to < piDec.length ? '…' : '';
+  return `${prefix}${before}<mark>${match}</mark>${after}${suffix}`;
+}
+
+function selectResult(i) {
+  mIdx = i;
+  // Desactivar todos, activar el seleccionado
+  document.querySelectorAll('.mr-item').forEach((el, j) => {
+    el.classList.toggle('active', j === i);
+  });
+  updateResultNav(matches.length);
+  // Scroll al item en el modal
+  const item = $(`mri-${i}`);
+  if (item) item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  // Scroll al texto en el display de π
+  closeResult();
+  setTimeout(() => {
+    buildMS(lastQ);
+    renderText(lastMS, mIdx);
+    scrollCur();
+  }, 100);
+}
+
+function navResult(dir) {
+  const newIdx = Math.max(0, Math.min(matches.length - 1, mIdx + dir));
+  selectResult(newIdx);
+}
+
+function updateResultNav(total) {
+  $('mr-prev').disabled = mIdx === 0;
+  $('mr-next').disabled = mIdx >= Math.min(total, 200) - 1;
+  $('mr-nav-info').textContent = total > 0
+    ? `${fn(mIdx + 1)} de ${fn(Math.min(total, 200))}${total > 200 ? ` (${fn(total)} totales)` : ''}`
+    : '';
+}
+
+function closeResult() {
+  $('modal-result').classList.remove('show');
+}
+
+// Cerrar con ESC o clic fuera
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeResult(); });
+$('modal-result').addEventListener('click', e => {
+  if (e.target === $('modal-result')) closeResult();
+});
+
+/* ════════════════════════════════════════════════
+   RENDER DEL TEXTO DE π (continuo, sin grupos)
+════════════════════════════════════════════════ */
+function buildPiText(dec, ms, ai) {
+  // Sin grupos: texto plano continuo, solo "3." al inicio
+  // Las marks se insertan donde corresponda
+  const hasM = ms && ms.size > 0;
+  if (!hasM) return '3.' + dec;
+
+  const parts = ['3.'];
+  let i = 0, len = dec.length;
+  while (i < len) {
+    if (ms.has(i)) {
+      const { end, mi } = ms.get(i);
+      const cls = mi === ai ? 'hi cur' : 'hi';
+      const mEnd = Math.min(end, len);
+      parts.push(`<mark class="${cls}">${dec.slice(i, mEnd)}</mark>`);
+      i = mEnd;
+    } else {
+      // Avanzar hasta la próxima mark o el final
+      let next = len;
+      for (const [k] of ms) { if (k > i && k < next) next = k; }
+      parts.push(dec.slice(i, next));
+      i = next;
+    }
+  }
+  return parts.join('');
+}
+
+function renderText(ms, ai) {
+  const el = $('pt');
+  if (ms && ms.size > 0) {
+    el.innerHTML = buildPiText(piDec, ms, ai ?? mIdx);
+  } else {
+    el.textContent = '3.' + piDec;
+  }
+}
+
+function buildMS(q) {
+  const ms = new Map();
+  matches.forEach((pos, i) => ms.set(pos - 1, { end: pos - 1 + q.length, mi: i }));
+  lastMS = ms;
+}
+
+function scrollCur() {
+  const el = document.querySelector('mark.cur');
+  if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+}
+
+function renderBanner() {
+  const b = $('bbanner');
+  if (loaded >= serverMax) {
+    b.style.display = 'flex';
+    b.innerHTML = `<span class="bb-info">✓ ${fn(serverMax)} decimales calculados — límite del servidor</span>`;
+    return;
+  }
+  const next = Math.min(loaded + CHUNK_COUNT, serverMax);
+  b.style.display = 'flex';
+  b.innerHTML = `
+    <span class="bb-info">
+      Mostrando <strong>${fn(loaded)}</strong> de <strong>${fn(serverMax)}</strong> dec.
+      · Siguiente bloque hasta <strong>${fn(next)}</strong>
+    </span>
+    <button class="bo" style="font-size:.52rem;padding:7px 10px;min-height:36px"
+      onclick="loadBlockAndRefresh()" ${busy ? 'disabled' : ''}>
+      +${fn(Math.min(CHUNK_COUNT, serverMax - loaded))}
+    </button>`;
+}
+
+/* ════════════════════════════════════════════════
+   API / SERVIDOR
+════════════════════════════════════════════════ */
 async function detectMode() {
   try {
     const r = await fetch('/api/status', { signal: AbortSignal.timeout(2000) });
-    if (!r.ok) throw new Error('no ok');
+    if (!r.ok) throw new Error();
     const d = await r.json();
     serverMax  = d.maxDigits || 100_000;
     serverMode = true;
-    document.getElementById('srv-badge').textContent = `🖥 servidor · ${fn(serverMax)} dec.`;
-    document.getElementById('srv-badge').classList.add('server');
     return true;
   } catch {
-    document.getElementById('srv-badge').textContent = '⚡ cliente JS (standalone)';
     serverMode = false;
     return false;
   }
 }
 
-/* ════════════════════════════════════════════════════════════
-   MODO SERVIDOR — carga bloques via API
-════════════════════════════════════════════════════════════ */
 async function waitServerReady() {
-  // Esperar hasta que /api/status devuelva ready:true
   for (let i = 0; i < 60; i++) {
     try {
       const r = await fetch('/api/status');
@@ -262,361 +627,200 @@ async function waitServerReady() {
 }
 
 async function loadFromServer(start, count) {
-  const url = `/api/pi?start=${start}&count=${count}`;
-  const r   = await fetch(url);
+  const r = await fetch(`/api/pi?start=${start}&count=${count}`);
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
-  const d = await r.json();
-  return d.decimals;
+  return (await r.json()).decimals;
 }
 
 async function searchOnServer(q) {
-  const url = `/api/search?q=${encodeURIComponent(q)}&start=0&count=${serverMax}`;
-  const r   = await fetch(url);
+  const r = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
-  return await r.json(); // { positions, totalFound, truncated }
+  return await r.json();
 }
 
-/* ════════════════════════════════════════════════════════════
-   MODO STANDALONE — Web Worker Machin BigInt
-════════════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════
+   WEB WORKER (modo standalone — Machin BigInt)
+════════════════════════════════════════════════ */
 const WORKER_SRC = `
 function arctan(x,prec){
   const S=10n**BigInt(prec+20),x2=BigInt(x*x);
   let term=S/BigInt(x),sum=term,neg=true,k=3n;
-  while(true){
-    term=term/x2; if(term===0n)break;
-    const d=term/k; if(d===0n)break;
-    if(neg)sum-=d;else sum+=d; neg=!neg; k+=2n;
-  }
+  while(true){term=term/x2;if(term===0n)break;const d=term/k;if(d===0n)break;
+    if(neg)sum-=d;else sum+=d;neg=!neg;k+=2n;}
   return sum;
 }
 self.onmessage=function(e){
-  const{start,end}=e.data, prec=end+5;
-  self.postMessage({type:'status',msg:'arctan(1/5)…'});
+  const{start,end}=e.data,prec=end+5;
+  self.postMessage({type:'s',msg:'arctan(1/5)…'});
   const t5=arctan(5,prec);
-  self.postMessage({type:'status',msg:'arctan(1/239)…'});
+  self.postMessage({type:'s',msg:'arctan(1/239)…'});
   const t239=arctan(239,prec);
-  self.postMessage({type:'status',msg:'combinando…'});
-  const S=10n**BigInt(prec+20);
-  const piS=4n*(4n*t5-t239);
+  self.postMessage({type:'s',msg:'combinando…'});
+  const S=10n**BigInt(prec+20),piS=4n*(4n*t5-t239);
   const piI=piS*(10n**BigInt(end))/S;
-  const s=piI.toString(); // '3'+decimales
-  self.postMessage({type:'done',chunk:s.slice(1).slice(start,end),start,end});
-};
-`;
-let worker=null, progTimer=null, calcT0=0;
+  const s=piI.toString();
+  self.postMessage({type:'done',chunk:s.slice(1).slice(start,end)});
+};`;
 
-function makeWorker(){
-  return new Worker(URL.createObjectURL(new Blob([WORKER_SRC],{type:'application/javascript'})));
+function makeWorker() {
+  return new Worker(URL.createObjectURL(new Blob([WORKER_SRC], { type: 'application/javascript' })));
 }
-function calcBlock(upTo){
-  return new Promise((res,rej)=>{
-    if(worker){try{worker.terminate()}catch(_){}}
-    worker=makeWorker();
-    worker.onmessage=e=>{
-      const d=e.data;
-      if(d.type==='status'){
-        const el=$('pblbl'); if(el) el.textContent=`π[${fn(loaded+1)}–${fn(upTo)}] · ${d.msg}`;
-      } else if(d.type==='done'){worker.terminate();worker=null;res(d.chunk);}
+function calcBlock(upTo) {
+  return new Promise((res, rej) => {
+    if (worker) { try { worker.terminate(); } catch(_) {} }
+    worker = makeWorker();
+    worker.onmessage = e => {
+      if (e.data.type === 'done') { worker.terminate(); worker = null; res(e.data.chunk); }
     };
-    worker.onerror=e=>{worker.terminate();worker=null;rej(e);};
-    worker.postMessage({start:loaded,end:upTo});
+    worker.onerror = e => { worker.terminate(); worker = null; rej(e); };
+    worker.postMessage({ start: loaded, end: upTo });
   });
 }
 
-/* ════════════════════════════════════════════════════════════
-   PROGRESS BAR (fake, visual feedback)
-════════════════════════════════════════════════════════════ */
-function startProg(label, speed=0.8){
-  $('prog-block').style.display='flex';
-  $('pblbl').textContent=label;
-  $('pbbar').style.width='3%';
-  $('pbeta').textContent='';
-  calcT0=Date.now(); let pct=3;
-  progTimer=setInterval(()=>{
-    pct=Math.min(95, pct+(pct<70?speed:.07));
-    $('pbbar').style.width=pct+'%';
-    $('pbeta').textContent=Math.round((Date.now()-calcT0)/1000)+'s';
-  },300);
-}
-function stopProg(){
-  clearInterval(progTimer);
-  $('pbbar').style.width='100%';
-  setTimeout(()=>{$('prog-block').style.display='none';},500);
-}
-
-/* ════════════════════════════════════════════════════════════
-   INIT
-════════════════════════════════════════════════════════════ */
-async function init(){
-  setStatus('go','…');
-  const isServer = await detectMode();
-
-  if(isServer){
-    // Esperar a que el servidor termine de calcular
-    setStatus('go','SERVIDOR…');
-    startProg('Esperando cálculo del servidor…', 0.3);
-    const ok = await waitServerReady();
-    if(!ok){ stopProg(); setStatus('err','ERROR'); $('hsub').textContent='El servidor no respondió'; return; }
-    stopProg();
-    // Cargar primer bloque
-    startProg(`Descargando π[1–${fn(INIT_COUNT)}]…`, 2);
-    try{
-      const chunk = await loadFromServer(0, INIT_COUNT);
-      piDec=chunk; loaded=INIT_COUNT;
-      stopProg(); updateFooter(); renderText(); renderBanner(); activateUI();
-    }catch(e){ stopProg(); setStatus('err','ERROR'); $('pt').textContent='⚠ '+e.message; }
-  } else {
-    // Modo standalone: calcular localmente
-    const MAX_LOCAL = 500_000;
-    serverMax = MAX_LOCAL;
-    startProg(`Calculando π[1–${fn(INIT_COUNT)}]…`);
-    try{
-      const chunk = await calcBlock(INIT_COUNT);
-      piDec=chunk; loaded=INIT_COUNT;
-      stopProg(); updateFooter(); renderText(); renderBanner(); activateUI();
-    }catch(e){ stopProg(); setStatus('err','ERROR'); $('pt').textContent='⚠ '+e.message; }
-  }
-}
-
-/* ════════════════════════════════════════════════════════════
-   CARGA DE BLOQUE ADICIONAL
-════════════════════════════════════════════════════════════ */
-async function loadNextBlock(){
-  if(busy || loaded >= serverMax) return false;
-  busy=true;
-  const upTo=Math.min(loaded+CHUNK_COUNT, serverMax);
-  setStatus('go','CARGANDO'); $('bbuscar').disabled=true; $('bmas').disabled=true;
-  startProg(serverMode
-    ? `Descargando π[${fn(loaded+1)}–${fn(upTo)}]…`
-    : `Calculando π[${fn(loaded+1)}–${fn(upTo)}]…`
-  , serverMode ? 3 : 0.8);
-  try{
+/* ════════════════════════════════════════════════
+   CARGA DE BLOQUES
+════════════════════════════════════════════════ */
+async function loadNextBlock() {
+  if (busy || loaded >= serverMax) return false;
+  busy = true;
+  $('bbuscar').disabled = true;
+  const upTo = Math.min(loaded + CHUNK_COUNT, serverMax);
+  try {
     let chunk;
-    if(serverMode){ chunk = await loadFromServer(loaded, upTo-loaded); }
-    else          { chunk = await calcBlock(upTo); }
-    piDec+=chunk; loaded=upTo;
-    stopProg(); updateFooter(); renderText(lastMS,mIdx); renderBanner();
-    busy=false; setStatus('ok','LISTO');
-    $('bbuscar').disabled=false; $('bmas').disabled=loaded>=serverMax;
+    if (serverMode) chunk = await loadFromServer(loaded, upTo - loaded);
+    else            chunk = await calcBlock(upTo);
+    piDec  += chunk;
+    loaded  = upTo;
+    updateFooter();
+    busy = false;
+    $('bbuscar').disabled = false;
     return true;
-  }catch(e){
-    stopProg(); setStatus('err','ERROR'); busy=false;
-    $('bbuscar').disabled=false; $('bmas').disabled=false;
+  } catch(e) {
+    busy = false;
+    $('bbuscar').disabled = false;
     return false;
   }
 }
 
-/* ════════════════════════════════════════════════════════════
-   UI HELPERS
-════════════════════════════════════════════════════════════ */
-const $  = id=>document.getElementById(id);
-const fn = n=>n.toLocaleString('es');
-const sleep = ms=>new Promise(r=>setTimeout(r,ms));
-
-function setStatus(cls,txt){
-  $('dot').className='dot'+(cls?' '+cls:'');
-  $('stxt').textContent=txt;
-}
-function updateFooter(){
-  const pct=Math.min(100,Math.round(loaded/serverMax*100));
-  $('fc').textContent=' '+fn(loaded);
-  $('fb').textContent=searched?' '+fn(searched):' —';
-  $('fmax').textContent=' '+fn(serverMax)+' dec.';
-  $('fbar').style.width=pct+'%'; $('fpct').textContent=pct+'%';
-  $('hsub').textContent=`${fn(loaded)} dec. cargados · ${fn(serverMax-loaded)} restantes`;
-}
-function activateUI(){
-  $('q').disabled=false; $('bbuscar').disabled=false;
-  $('bmas').disabled=loaded>=serverMax;
-  setStatus('ok','LISTO');
-  $('rbar').innerHTML=`<span style="color:#1a5533;font-size:clamp(.56rem,.1rem+1.1vw,.67rem)">
-    ${fn(loaded)} dec. listos · escribe y pulsa BUSCAR</span>`;
-  $('q').focus();
+async function loadBlockAndRefresh() {
+  const ok = await loadNextBlock();
+  if (ok) { renderText(lastMS, mIdx); renderBanner(); }
 }
 
-/* ════════════════════════════════════════════════════════════
-   RENDER
-════════════════════════════════════════════════════════════ */
-function buildHTML(dec,ms,ai){
-  const hasM=ms&&ms.size>0;
-  const p=['3.']; let col=0,i=0,len=dec.length;
-  while(i<len){
-    if(col>0)p.push(' '); let j=0;
-    while(j<10&&i<len){
-      if(hasM&&ms.has(i)){
-        const{end,mi}=ms.get(i), cls=mi===ai?'hi cur':'hi';
-        p.push(`<mark class="${cls}">`);
-        const mE=Math.min(end,len);
-        while(i<mE){
-          p.push(dec[i]);i++;j++;
-          if(j>=10&&i<mE){
-            p.push('</mark>');col++;
-            if(col===5){p.push('\n');col=0;}else p.push(' ');
-            p.push(`<mark class="${cls}">`);j=0;
-          }
-        }
-        p.push('</mark>');
-      }else{p.push(dec[i]);i++;j++;}
-    }
-    col++;if(col===5){p.push('\n');col=0;}
-  }
-  return p.join('');
-}
-function renderText(ms,ai){
-  const el=$('pt');
-  if(ms&&ms.size>0) el.innerHTML=buildHTML(piDec,ms,ai??mIdx);
-  else el.textContent=buildHTML(piDec,null,-1);
-}
-function renderBanner(){
-  const b=$('bbanner');
-  if(loaded>=serverMax){
-    b.style.display='flex';
-    b.innerHTML=`<span class="bb-info">✓ Límite: <strong>${fn(serverMax)}</strong> dec. disponibles</span>`;
-    return;
-  }
-  const next=Math.min(loaded+CHUNK_COUNT,serverMax);
-  b.style.display='flex';
-  b.innerHTML=`
-    <span class="bb-info">
-      <strong>${fn(loaded)}</strong> de <strong>${fn(serverMax)}</strong> dec.
-      · Siguiente: hasta <strong>${fn(next)}</strong>
-    </span>
-    <button class="bo" style="font-size:.53rem;padding:8px 11px;min-height:38px"
-      onclick="loadBlockAndRefresh()" ${busy?'disabled':''}>
-      +${fn(Math.min(CHUNK_COUNT,serverMax-loaded))}
-    </button>`;
-}
-async function loadBlockAndRefresh(){
-  const ok=await loadNextBlock();
-  if(ok){renderText(lastMS,mIdx);renderBanner();if(lastQ)extendSearch(lastQ);}
-}
+/* ════════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════════ */
+async function init() {
+  setStatus('go', '…');
+  const isServer = await detectMode();
 
-/* ════════════════════════════════════════════════════════════
-   BÚSQUEDA
-════════════════════════════════════════════════════════════ */
-async function buscar(){
-  const q=$('q').value.trim().replace(/\D/g,'');
-  if(!q||busy) return;
-  lastQ=q; matches=[]; mIdx=0; searched=0;
-
-  // Si modo servidor: búsqueda server-side en TODOS los decimales disponibles
-  if(serverMode){
-    setStatus('go','BUSCANDO');
-    $('bbuscar').disabled=true;
-    try{
-      const res = await searchOnServer(q);
-      matches   = res.positions;
-      searched  = serverMax;
-      // Asegurarnos de tener cargados los decimales hasta la primera aparición
-      if(matches.length>0 && matches[0]>loaded){
-        // Cargar hasta la primera aparición
-        const needed=Math.ceil(matches[0]/CHUNK_COUNT)*CHUNK_COUNT;
-        const upTo=Math.min(needed,serverMax);
-        if(upTo>loaded){
-          startProg(`Cargando hasta dec. ${fn(upTo)} para mostrar resultado…`,3);
-          while(loaded<upTo){
-            const chunk=await loadFromServer(loaded,Math.min(CHUNK_COUNT,upTo-loaded));
-            piDec+=chunk; loaded+=chunk.length;
-          }
-          stopProg(); updateFooter();
-        }
-      }
-    }catch(e){
-      console.error('Search error:',e);
-      // fallback a búsqueda local
-      let i=0; while((i=piDec.indexOf(q,i))!==-1){matches.push(i+1);i++;}
-      searched=loaded;
-    }
-    $('bbuscar').disabled=false;
-    setStatus('ok','LISTO');
+  if (isServer) {
+    setStatus('go', 'SERVIDOR…');
+    $('hsub').textContent = 'Esperando cálculo del servidor…';
+    const ok = await waitServerReady();
+    if (!ok) { setStatus('err', 'ERROR'); $('hsub').textContent = 'Servidor no responde'; return; }
+    try {
+      const chunk = await loadFromServer(0, INIT_COUNT);
+      piDec = chunk; loaded = INIT_COUNT;
+      updateFooter(); renderText(); renderBanner(); activateUI();
+    } catch(e) { setStatus('err', 'ERROR'); $('pt').textContent = '⚠ ' + e.message; }
   } else {
-    // Modo standalone: búsqueda local en lo cargado
-    let i=0; while((i=piDec.indexOf(q,i))!==-1){matches.push(i+1);i++;}
-    searched=loaded;
+    serverMax = 500_000;
+    $('hsub').textContent = 'Calculando π localmente…';
+    try {
+      const chunk = await calcBlock(INIT_COUNT);
+      piDec = chunk; loaded = INIT_COUNT;
+      updateFooter(); renderText(); renderBanner(); activateUI();
+    } catch(e) { setStatus('err', 'ERROR'); $('pt').textContent = '⚠ ' + e.message; }
   }
-
-  $('fb').textContent=' '+fn(searched);
-  buildMS(q); updateRbar(q); renderText(lastMS,mIdx); scrollCur();
 }
 
-function extendSearch(q){
-  const from=Math.max(0,searched-q.length+1), prev=matches.length;
-  let i=from; while((i=piDec.indexOf(q,i))!==-1){matches.push(i+1);i++;}
-  searched=loaded; $('fb').textContent=' '+fn(searched);
-  buildMS(q); updateRbar(q);
-  if(matches.length>prev){mIdx=prev;renderText(lastMS,mIdx);scrollCur();}
-  else renderText(lastMS,mIdx);
-}
+/* ════════════════════════════════════════════════
+   BÚSQUEDA — automática por bloques
+════════════════════════════════════════════════ */
+async function buscar() {
+  const q = $('q').value.trim().replace(/\D/g, '');
+  if (!q || busy) return;
 
-async function cargarMasYBuscar(){
-  if(busy)return;
-  const q=$('q').value.trim().replace(/\D/g,'')||lastQ;
-  if(!q){await loadNextBlock();renderText();renderBanner();activateUI();return;}
-  lastQ=q;
-  const ok=await loadNextBlock();
-  if(ok){extendSearch(q);renderBanner();}
-}
+  lastQ   = q;
+  matches = [];
+  mIdx    = 0;
+  lastMS  = null;
 
-function buildMS(q){
-  const ms=new Map();
-  matches.forEach((pos,i)=>ms.set(pos-1,{end:pos-1+q.length,mi:i}));
-  lastMS=ms;
-}
+  // Mostrar modal de búsqueda
+  showSearchModal('BUSCANDO EN π', `Buscando «${q}»…`);
 
-function updateRbar(q){
-  const bar=$('rbar');
-  const more=loaded<serverMax;
-  const moreBtn=more
-    ?`<button class="bn bl" onclick="cargarMasYBuscar()" title="+${fn(CHUNK_COUNT)} dec.">+${fn(CHUNK_COUNT)}</button>`:'';
-  if(!matches.length){
-    bar.innerHTML=`<span class="rc">«${q}» no encontrado</span>
-      <span class="rp">en ${fn(searched)} dec.</span>
-      ${more?`<span class="rn">${moreBtn}</span>`:''}`;
-    return;
-  }
-  bar.innerHTML=`
-    <span class="rc">${fn(matches.length)} vez${matches.length!==1?'es':''}</span>
-    <span class="rp">1ª: dec.${fn(matches[0])}${serverMode&&searched>=serverMax?' (búsqueda completa)':''}</span>
-    <span class="rn">
-      ${!serverMode&&more?moreBtn:''}
-      <button class="bn" id="bprev" onclick="nav(-1)" disabled>◀</button>
-      <span class="ni" id="ninfo">1/${fn(matches.length)}</span>
-      <button class="bn" id="bnext" onclick="nav(1)" ${matches.length>1?'':'disabled'}>▶</button>
-    </span>`;
-}
+  let searchedDec = 0;
 
-function nav(dir){
-  mIdx=Math.max(0,Math.min(matches.length-1,mIdx+dir));
-  // Si la posición no está cargada aún, cargar automáticamente
-  const pos=matches[mIdx];
-  if(pos>loaded){
-    (async()=>{
-      setStatus('go','CARGANDO');
-      const needed=Math.ceil(pos/CHUNK_COUNT)*CHUNK_COUNT;
-      const upTo=Math.min(needed,serverMax);
-      while(loaded<upTo&&serverMode){
-        const chunk=await loadFromServer(loaded,Math.min(CHUNK_COUNT,upTo-loaded));
-        piDec+=chunk; loaded+=chunk.length;
+  if (serverMode) {
+    // ── Modo servidor: búsqueda completa en el servidor de una vez ──
+    updateSearchModal(`Consultando ${fn(serverMax)} decimales en el servidor…`);
+    try {
+      const res = await searchOnServer(q);
+      matches    = res.positions;
+      searchedDec = serverMax;
+
+      // Si hay resultados, asegurar que los decimales hasta la 1ª pos están cargados
+      if (matches.length > 0 && matches[0] > loaded) {
+        const needed = Math.ceil(matches[0] / CHUNK_COUNT) * CHUNK_COUNT;
+        const upTo   = Math.min(needed, serverMax);
+        updateSearchModal(`Cargando decimales hasta posición ${fn(matches[0])}…`);
+        while (loaded < upTo) {
+          const chunk = await loadFromServer(loaded, Math.min(CHUNK_COUNT, upTo - loaded));
+          piDec += chunk; loaded += chunk.length;
+        }
+        updateFooter();
       }
-      updateFooter(); renderText(lastMS,mIdx); setStatus('ok','LISTO');
-      $('ninfo').textContent=`${fn(mIdx+1)}/${fn(matches.length)}`;
-      $('bprev').disabled=mIdx===0; $('bnext').disabled=mIdx===matches.length-1;
-      scrollCur();
-    })();
-    return;
+    } catch(e) {
+      // fallback local
+      let i = 0;
+      while ((i = piDec.indexOf(q, i)) !== -1) { matches.push(i + 1); i++; }
+      searchedDec = loaded;
+    }
+  } else {
+    // ── Modo standalone: buscar bloque a bloque hasta encontrar ──
+    let blockNum = 0;
+    const totalBlocks = Math.ceil(serverMax / CHUNK_COUNT);
+
+    while (true) {
+      blockNum++;
+      // Buscar en lo cargado
+      const searchFrom = Math.max(0, searchedDec - q.length + 1);
+      let i = searchFrom;
+      while ((i = piDec.indexOf(q, i)) !== -1) { matches.push(i + 1); i++; }
+      searchedDec = loaded;
+
+      const pct = Math.round(loaded / serverMax * 100);
+      updateSearchModal(`Bloque ${blockNum}/${totalBlocks} · ${fn(loaded)} decimales · ${pct}%`);
+      $('ms-bar').style.width = pct + '%';
+
+      // Si encontramos algo → parar
+      if (matches.length > 0) break;
+      // Si no hay más → parar
+      if (loaded >= serverMax) break;
+      // Cargar siguiente bloque
+      const ok = await loadNextBlock();
+      if (!ok) break;
+    }
   }
-  renderText(lastMS,mIdx);
-  $('ninfo').textContent=`${fn(mIdx+1)}/${fn(matches.length)}`;
-  $('bprev').disabled=mIdx===0; $('bnext').disabled=mIdx===matches.length-1;
-  scrollCur();
-}
-function scrollCur(){
-  const el=document.querySelector('mark.cur');
-  if(el)el.scrollIntoView({block:'center',behavior:'smooth'});
+
+  hideSearchModal();
+  setStatus('ok', 'LISTO');
+
+  // Renderizar marcas en el display
+  buildMS(q);
+  renderText(lastMS, 0);
+  renderBanner();
+
+  // Mostrar modal de resultados
+  showResult(q, matches, searchedDec);
 }
 
-$('q').addEventListener('keydown',e=>{if(e.key==='Enter')buscar();});
+/* ════════════════════════════════════════════════
+   ENTER
+════════════════════════════════════════════════ */
+$('q').addEventListener('keydown', e => { if (e.key === 'Enter') buscar(); });
+
 init();
 </script>
 </body>
