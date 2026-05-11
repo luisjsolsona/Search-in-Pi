@@ -92,9 +92,26 @@ function saveCache(piStr) {
 function loadCache() {
   try {
     if (!fs.existsSync(CACHE_PATH)) return null;
-    const data = fs.readFileSync(CACHE_PATH, 'utf8').trim();
-    if (!data.startsWith('3') || data.length < 2) return null;
-    console.log(`[π] Caché encontrado: ${(data.length - 1).toLocaleString('es')} decimales`);
+    console.log(`[π] Leyendo caché desde ${CACHE_PATH}…`);
+    let data = fs.readFileSync(CACHE_PATH, 'utf8');
+    // Limpiar: quitar punto decimal, espacios, saltos de línea
+    // Soporta formato "3.14159..." (pi-billion.txt) y "314159..." (sin punto)
+    data = data.replace(/\s/g, '');          // quitar whitespace
+    if (data.startsWith('3.')) {
+      data = '3' + data.slice(2);            // "3.14159..." → "314159..."
+    }
+    if (!data.startsWith('3') || data.length < 2) {
+      console.warn('[π] Caché inválido: no empieza por 3');
+      return null;
+    }
+    // Verificar que son solo dígitos
+    if (!/^\d+$/.test(data)) {
+      console.warn('[π] Caché contiene caracteres no numéricos, limpiando…');
+      data = data.replace(/\D/g, '');
+      if (!data.startsWith('3')) data = '3' + data;
+    }
+    const digits = data.length - 1;
+    console.log(`[π] Caché encontrado: ${digits.toLocaleString('es')} decimales`);
     return data;
   } catch (e) {
     console.warn(`[π] No se pudo leer el caché: ${e.message}`);
@@ -272,8 +289,11 @@ app.post('/api/expand', (req, res) => {
 // Endpoint para cargar un caché externo via POST (útil para subir decimales precalculados)
 app.post('/api/cache/load', express.text({ limit: '50mb' }), (req, res) => {
   if (expanding) return res.status(409).json({ error: 'Expansión en curso' });
-  const data = req.body.trim();
-  if (!data.startsWith('3') || data.length < 2)
+  let data = req.body.replace(/\s/g, '');
+  if (data.startsWith('3.')) data = '3' + data.slice(2);
+  data = data.replace(/[^\d]/g, '');
+  if (!data.startsWith('3')) data = '3' + data;
+  if (data.length < 2)
     return res.status(400).json({ error: 'Datos inválidos: deben empezar por 3' });
   const digits = data.length - 1;
   if (digits > HARD_LIMIT_SAFE)

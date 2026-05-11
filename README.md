@@ -6,12 +6,11 @@
 
 <p align="center">
   <strong>Buscador de secuencias numéricas en los decimales de π</strong><br>
-  Calcula hasta 1.000.000 de decimales con el algoritmo <strong>Chudnovsky</strong> y los sirve por bloques bajo demanda.
+  Calcula con el algoritmo <strong>Chudnovsky</strong> y soporta caché persistente en disco.<br>
+  Arranca instantáneamente si hay decimales pregenerados disponibles.
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Docker-compatible-2496ED?logo=docker&logoColor=white">
-  <img src="https://img.shields.io/badge/CasaOS-compatible-6C5CE7?logo=homeassistant&logoColor=white">
   <img src="https://img.shields.io/badge/Node.js-%3E%3D18-339933?logo=nodedotjs&logoColor=white">
   <img src="https://img.shields.io/badge/License-MIT-green">
 </p>
@@ -21,31 +20,17 @@
 ## ✨ Características
 
 - **Algoritmo Chudnovsky** con *binary splitting* — el más eficiente implementado en JS puro
+- **Caché persistente en disco**: carga `pi_cache.txt` al arrancar en <1 segundo
+- **Expansión dinámica**: añade 500K decimales en caliente sin reiniciar el contenedor
 - **API REST** para servir los dígitos por bloques (`/api/pi`, `/api/search`)
-- **Búsqueda server-side**: busca en todos los decimales disponibles en el servidor de una sola vez
-- **Carga lazy**: el frontend carga solo los decimales necesarios para mostrar
+- **Búsqueda server-side**: busca en todos los decimales disponibles de una sola vez
 - **Modo standalone**: si se abre sin servidor, calcula localmente con Web Worker + Machin BigInt
+- **Límite dinámico según RAM**: calcula automáticamente cuántos decimales puede manejar el sistema
 - **Responsive**: funciona en móvil, tablet y escritorio
-- **CasaOS ready**: etiquetas y `docker-compose.yml` listo para importar
 
 ---
 
 ## 🚀 Despliegue rápido
-
-### Docker (una línea)
-
-```bash
-docker run -d \
-  --name search-in-pi \
-  --restart unless-stopped \
-  -p 3141:3141 \
-  -e MAX_DIGITS=100000 \
-  ghcr.io/luisjsolsona/search-in-pi:latest
-```
-
-Abre `http://TU_IP:3141` en el navegador.
-
-### Docker Compose
 
 ```bash
 git clone https://github.com/luisjsolsona/Search-in-Pi.git
@@ -53,113 +38,55 @@ cd Search-in-Pi
 docker compose up -d
 ```
 
+Abre `http://TU_IP:3141` en el navegador.
+
 ---
 
-## 🏠 CasaOS
+## 💾 Caché de decimales pregenerados
 
-### Opción A — Importar docker-compose (recomendado)
+El sistema puede arrancar instantáneamente si dispones de un fichero de decimales de π en disco.
 
-1. En CasaOS, ve a **App Store → Custom Install → Import**
-2. Pega el contenido de [`docker-compose.yml`](docker-compose.yml) o la URL del repositorio
-3. Ajusta `MAX_DIGITS` según tu RAM y pulsa **Install**
+### Formato del fichero
 
-### Opción B — Desde la tienda de apps (cuando esté publicado)
+Un fichero de texto plano que empiece por `3` seguido de todos los decimales **sin punto ni espacios**:
 
-Busca **"Search in Pi"** en el App Store de CasaOS.
+```
+314159265358979323846264338327950288...
+```
+
+### Usando pi-billion.txt (MIT)
+
+```bash
+# Descargar ~1GB de decimales de π
+wget -O /tmp/pi-billion.txt https://stuff.mit.edu/afs/sipb/contrib/pi/pi-billion.txt
+
+# Crear directorio del caché
+mkdir -p /DATA/AppData/search-in-pi/data
+
+# Limpiar formato (quitar el punto decimal) y guardar
+tr -d '.\n\r ' < /tmp/pi-billion.txt > /DATA/AppData/search-in-pi/data/pi_cache.txt
+
+# Verificar que empieza bien
+head -c 30 /DATA/AppData/search-in-pi/data/pi_cache.txt
+# → 314159265358979323846264338327...
+```
+
+### Cargar en caliente (sin reiniciar)
+
+```bash
+curl -X POST http://TU_IP:3141/api/cache/load \
+  -H "Content-Type: text/plain" \
+  --data-binary @/ruta/al/pi_cache.txt
+```
 
 ### Variables de entorno
 
 | Variable | Por defecto | Descripción |
 |---|---|---|
 | `PORT` | `3141` | Puerto del servidor HTTP |
-| `MAX_DIGITS` | `1000000` | Decimales de π a calcular al arrancar |
+| `MAX_DIGITS` | `1000000` | Decimales a calcular si no hay caché |
+| `PI_CACHE_PATH` | `/data/pi_cache.txt` | Ruta del fichero de caché |
 | `NODE_ENV` | `production` | Modo de Node.js |
-
-### Recursos recomendados según `MAX_DIGITS`
-
-| MAX_DIGITS | RAM mínima | Tiempo de cálculo |
-|---|---|---|
-| 100.000 | 256 MB | ~5 segundos |
-| 500.000 | 1 GB | ~60 segundos |
-| 1.000.000 | 2 GB | ~4 minutos |
-
----
-
-## 🔌 API REST
-
-### `GET /api/status`
-
-Estado del servidor.
-
-```json
-{
-  "ready": true,
-  "totalDigits": 100000,
-  "maxDigits": 100000,
-  "version": "1.0.0"
-}
-```
-
-### `GET /api/pi?start=0&count=10000`
-
-Devuelve un bloque de decimales.
-
-| Parámetro | Descripción | Máximo |
-|---|---|---|
-| `start` | Índice 0-based del primer decimal | — |
-| `count` | Cuántos decimales devolver | 100.000 |
-
-```json
-{
-  "start": 0,
-  "count": 10000,
-  "available": 100000,
-  "decimals": "14159265358979..."
-}
-```
-
-### `GET /api/search?q=314159`
-
-Búsqueda de una secuencia en todos los decimales disponibles.
-
-| Parámetro | Descripción |
-|---|---|
-| `q` | Secuencia de dígitos a buscar (máx. 20) |
-| `start` | Desde qué decimal buscar (opcional, 0) |
-| `count` | Cuántos decimales buscar (opcional, todos) |
-
-```json
-{
-  "query": "314159",
-  "start": 0,
-  "end": 100000,
-  "totalFound": 3,
-  "positions": [1, 51234, 87456],
-  "truncated": false
-}
-```
-
-> Las posiciones son **1-based**: `1` significa el primer decimal de π (el `1` de `3.14159…`).
-
----
-
-## 🏗️ Desarrollo local
-
-```bash
-git clone https://github.com/luisjsolsona/Search-in-Pi.git
-cd Search-in-Pi
-npm install
-MAX_DIGITS=10000 npm start
-```
-
-Abre `http://localhost:3141`.
-
-### Construir imagen Docker localmente
-
-```bash
-docker build -t search-in-pi .
-docker run -p 3141:3141 -e MAX_DIGITS=50000 search-in-pi
-```
 
 ---
 
@@ -185,15 +112,12 @@ El modo standalone (sin servidor) usa la fórmula de **Machin**:
 ```
 Search-in-Pi/
 ├── src/
-│   └── server.js          # Servidor Express + algoritmo Chudnovsky
+│   └── server.js          # Servidor Express + Chudnovsky + sistema de caché
 ├── public/
-│   ├── index.html         # Frontend responsive (PWA-ready)
+│   ├── index.html         # Frontend responsive
 │   └── icon.svg           # Icono: lupa con π
-├── .github/
-│   └── workflows/
-│       └── docker.yml     # CI/CD → GHCR
 ├── Dockerfile             # Multi-stage, imagen Alpine mínima
-├── docker-compose.yml     # Compatible CasaOS
+├── docker-compose.yml     # Con volumen persistente para caché
 ├── package.json
 └── README.md
 ```
