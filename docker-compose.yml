@@ -14,12 +14,17 @@ services:
 
     environment:
       - PORT=3141
-      # Decimales de π a calcular al arrancar:
-      #   100000  →  ~256MB RAM, ~5s cálculo
-      #   500000  →  ~1GB RAM,   ~60s cálculo
-      #   1000000 →  ~2GB RAM,   ~4min cálculo
+      # Decimales a calcular si NO hay caché en disco.
+      # Con caché, arranca instantáneamente con todos los que haya guardados.
       - MAX_DIGITS=1000000
       - NODE_ENV=production
+      # Ruta del caché dentro del contenedor (mapeada al volumen abajo)
+      - PI_CACHE_PATH=/data/pi_cache.txt
+
+    volumes:
+      # Volumen persistente para el caché de π
+      # En CasaOS: /DATA/AppData/search-in-pi/data → /data
+      - /DATA/AppData/search-in-pi/data:/data
 
     # CasaOS muestra estas etiquetas en la interfaz
     labels:
@@ -36,7 +41,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 2G
+          memory: 4G
         reservations:
           memory: 512M
 
@@ -45,7 +50,7 @@ services:
       interval: 15s
       timeout: 5s
       retries: 5
-      start_period: 300s
+      start_period: 60s   # Mucho más rápido si hay caché
 
 x-casaos:
   architectures:
@@ -60,5 +65,5 @@ x-casaos:
     custom: Search in Pi
   icon: https://raw.githubusercontent.com/luisjsolsona/Search-in-Pi/main/public/icon.svg
   description:
-    es_es: Buscador de secuencias numéricas en los decimales de π. Calcula hasta 1.000.000 decimales con Chudnovsky.
-    en_us: Search for numeric sequences in the decimals of π. Up to 1,000,000 decimal places using Chudnovsky.
+    es_es: Buscador de secuencias numéricas en los decimales de π con caché persistente.
+    en_us: Search for numeric sequences in π decimals with persistent cache.

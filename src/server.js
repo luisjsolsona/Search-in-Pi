@@ -3,31 +3,32 @@
  *
  * Calcula π con el algoritmo Chudnovsky + binary splitting (BigInt).
  * Fórmula: π = 426880·√10005·Q / T
- * Cada término aporta ~14.18 dígitos decimales.
  *
- * Soporta expansión dinámica vía POST /api/expand sin reiniciar.
+ * Sistema de caché: si existe /data/pi_cache.txt al arrancar,
+ * carga los decimales desde disco (instantáneo) en vez de calcular.
+ * Las expansiones también se persisten en el caché.
  */
 
 'use strict';
 
 const express = require('express');
 const path    = require('path');
+const fs      = require('fs');
 
 const app  = express();
 const PORT = process.env.PORT || 3141;
 
-// Límite inicial configurable; puede crecer en caliente
-let currentMax = parseInt(process.env.MAX_DIGITS || '1000000', 10);
-const EXPAND_STEP = 500_000;  // decimales que añade cada llamada a /api/expand
+// Ruta del caché — debe estar en un volumen persistente
+const CACHE_PATH = process.env.PI_CACHE_PATH || '/data/pi_cache.txt';
 
-// Límite dinámico basado en la RAM total del sistema.
-// Cada decimal necesita ~1 byte en el string final, pero durante el cálculo
-// Chudnovsky usa BigInt intermedios que multiplican el uso de RAM por ~10-20x.
-// Usamos un factor conservador: RAM_total / 20 → decimales seguros.
+// Límite inicial configurable
+let currentMax = parseInt(process.env.MAX_DIGITS || '1000000', 10);
+const EXPAND_STEP = 500_000;
+
+// Límite dinámico basado en RAM
 const os = require('os');
 const RAM_TOTAL_GB  = os.totalmem() / (1024 ** 3);
-const HARD_LIMIT    = Math.floor(RAM_TOTAL_GB * 1_000_000 / 20) * 1_000; // múltiplo de 1000
-// Mínimo 1M, máximo 1.000M (1 billón — límite teórico de string en V8)
+const HARD_LIMIT    = Math.floor(RAM_TOTAL_GB * 1_000_000 / 20) * 1_000;
 const HARD_LIMIT_SAFE = Math.max(1_000_000, Math.min(1_000_000_000, HARD_LIMIT));
 
 // ═══════════════════════════════════════════════════════════
@@ -73,46 +74,104 @@ function computePi(digits) {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  ESTADO GLOBAL — mutable en caliente
+//  CACHÉ EN DISCO
 // ═══════════════════════════════════════════════════════════
 
-let PI_STR   = '';    // "3" + decimales
-let ready    = false;
-let expanding = false; // mutex: evita dos expansiones simultáneas
+function saveCache(piStr) {
+  try {
+    const dir = path.dirname(CACHE_PATH);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(CACHE_PATH, piStr, 'utf8');
+    const digits = piStr.length - 1;
+    console.log(`[π] Caché guardado: ${digits.toLocaleString('es')} decimales → ${CACHE_PATH}`);
+  } catch (e) {
+    console.warn(`[π] No se pudo guardar el caché: ${e.message}`);
+  }
+}
 
-// ── Cálculo inicial ────────────────────────────────────────
-console.log(`[π] Search-in-Pi v1.2.0`);
+function loadCache() {
+  try {
+    if (!fs.existsSync(CACHE_PATH)) return null;
+    const data = fs.readFileSync(CACHE_PATH, 'utf8').trim();
+    if (!data.startsWith('3') || data.length < 2) return null;
+    console.log(`[π] Caché encontrado: ${(data.length - 1).toLocaleString('es')} decimales`);
+    return data;
+  } catch (e) {
+    console.warn(`[π] No se pudo leer el caché: ${e.message}`);
+    return null;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  ESTADO GLOBAL
+// ═══════════════════════════════════════════════════════════
+
+let PI_STR    = '';
+let ready     = false;
+let expanding = false;
+let loadedFromCache = false;
+
+// ── Arranque: caché → cálculo ──────────────────────────────
+console.log(`[π] Search-in-Pi v1.3.0`);
 console.log(`[π] RAM total: ${RAM_TOTAL_GB.toFixed(1)} GB → límite dinámico: ${HARD_LIMIT_SAFE.toLocaleString('es')} decimales`);
-console.log(`[π] Calculando ${currentMax.toLocaleString('es')} decimales con Chudnovsky…`);
-const t0 = Date.now();
+console.log(`[π] Caché: ${CACHE_PATH}`);
 
 setImmediate(() => {
-  try {
-    PI_STR = computePi(currentMax);
-    ready  = true;
-    const secs = ((Date.now() - t0) / 1000).toFixed(2);
-    const KNOWN = '31415926535897932384626433832795028841971693993751';
-    const ok = PI_STR.startsWith(KNOWN.slice(0, Math.min(KNOWN.length, currentMax + 1)));
-    console.log(`[π] ✓ ${currentMax.toLocaleString('es')} decimales en ${secs}s — verificación: ${ok ? 'OK' : 'ERROR'}`);
-    console.log(`[π] π = ${PI_STR[0]}.${PI_STR.slice(1, 21)}…`);
-  } catch (e) {
-    console.error('[π] ERROR en cálculo inicial:', e);
+  const cached = loadCache();
+  if (cached) {
+    // Usar caché si tiene al menos los decimales pedidos
+    PI_STR = cached;
+    const cachedDigits = cached.length - 1;
+    if (cachedDigits >= currentMax) {
+      // El caché tiene suficientes → listo al instante
+      currentMax = cachedDigits; // usar todos los que hay
+      ready = true;
+      loadedFromCache = true;
+      const KNOWN = '31415926535897932384626433832795028841971693993751';
+      const ok = PI_STR.startsWith(KNOWN.slice(0, Math.min(KNOWN.length, 51)));
+      console.log(`[π] ✓ Cargado desde caché: ${currentMax.toLocaleString('es')} decimales — verificación: ${ok ? 'OK' : 'ERROR'}`);
+      console.log(`[π] π = ${PI_STR[0]}.${PI_STR.slice(1, 21)}…`);
+    } else {
+      // El caché tiene menos de lo pedido → calcular hasta currentMax y guardar
+      console.log(`[π] Caché tiene ${cachedDigits.toLocaleString('es')} decimales, calculando hasta ${currentMax.toLocaleString('es')}…`);
+      const t0 = Date.now();
+      try {
+        PI_STR = computePi(currentMax);
+        ready = true;
+        const secs = ((Date.now() - t0) / 1000).toFixed(2);
+        const KNOWN = '31415926535897932384626433832795028841971693993751';
+        const ok = PI_STR.startsWith(KNOWN.slice(0, Math.min(KNOWN.length, 51)));
+        console.log(`[π] ✓ ${currentMax.toLocaleString('es')} decimales en ${secs}s — verificación: ${ok ? 'OK' : 'ERROR'}`);
+        saveCache(PI_STR);
+      } catch (e) {
+        console.error('[π] ERROR en cálculo inicial:', e);
+      }
+    }
+  } else {
+    // Sin caché → calcular desde cero
+    console.log(`[π] Sin caché. Calculando ${currentMax.toLocaleString('es')} decimales con Chudnovsky…`);
+    const t0 = Date.now();
+    try {
+      PI_STR = computePi(currentMax);
+      ready  = true;
+      const secs = ((Date.now() - t0) / 1000).toFixed(2);
+      const KNOWN = '31415926535897932384626433832795028841971693993751';
+      const ok = PI_STR.startsWith(KNOWN.slice(0, Math.min(KNOWN.length, 51)));
+      console.log(`[π] ✓ ${currentMax.toLocaleString('es')} decimales en ${secs}s — verificación: ${ok ? 'OK' : 'ERROR'}`);
+      console.log(`[π] π = ${PI_STR[0]}.${PI_STR.slice(1, 21)}…`);
+      saveCache(PI_STR);
+    } catch (e) {
+      console.error('[π] ERROR en cálculo inicial:', e);
+    }
   }
 });
 
 // ── Expansión dinámica ─────────────────────────────────────
-/**
- * Recalcula π hasta newTarget decimales.
- * Chudnovsky recalcula desde 0 (no es incremental), pero en
- * la práctica a 2M tarda ~15 min, a 1.5M ~6 min, etc.
- * Se ejecuta en segundo plano; el estado `expanding` evita colisiones.
- */
 function expandPi(newTarget) {
   return new Promise((resolve, reject) => {
     expanding = true;
     const t = Date.now();
     console.log(`[π] Expandiendo de ${currentMax.toLocaleString('es')} → ${newTarget.toLocaleString('es')} decimales…`);
-    // setImmediate para liberar el event loop antes del cálculo pesado
     setImmediate(() => {
       try {
         const newStr = computePi(newTarget);
@@ -121,6 +180,8 @@ function expandPi(newTarget) {
         expanding  = false;
         const secs = ((Date.now() - t) / 1000).toFixed(2);
         console.log(`[π] ✓ Expandido a ${currentMax.toLocaleString('es')} decimales en ${secs}s`);
+        // Guardar caché actualizado en background (no bloqueante)
+        setImmediate(() => saveCache(PI_STR));
         resolve({ currentMax, secs });
       } catch(e) {
         expanding = false;
@@ -147,52 +208,43 @@ app.use((req, res, next) => {
 //  ENDPOINTS
 // ═══════════════════════════════════════════════════════════
 
-/** GET /api/status */
 app.get('/api/status', (req, res) => {
   res.json({
     ready,
     expanding,
-    totalDigits:  ready ? PI_STR.length - 1 : 0,
+    totalDigits:      ready ? PI_STR.length - 1 : 0,
     currentMax,
-    expandStep:   EXPAND_STEP,
-    hardLimit:    HARD_LIMIT_SAFE,
-    ramGB:        parseFloat(RAM_TOTAL_GB.toFixed(1)),
-    version:      '1.2.0',
+    expandStep:       EXPAND_STEP,
+    hardLimit:        HARD_LIMIT_SAFE,
+    ramGB:            parseFloat(RAM_TOTAL_GB.toFixed(1)),
+    loadedFromCache,
+    cachePath:        CACHE_PATH,
+    version:          '1.3.0',
   });
 });
 
-/** GET /api/pi?start=0&count=1000000 */
 app.get('/api/pi', (req, res) => {
   if (!ready) return res.status(503).json({ error: 'Calculando π…', ready: false });
-
   const start = Math.max(0, parseInt(req.query.start || '0', 10));
   const count = Math.min(1_000_000, Math.max(1, parseInt(req.query.count || '1000000', 10)));
-
   if (start >= currentMax)
     return res.status(400).json({ error: `start (${start}) >= currentMax (${currentMax})` });
-
   const decimals = PI_STR.slice(1);
   const chunk    = decimals.slice(start, start + count);
-
   res.json({ start, count: chunk.length, available: currentMax, decimals: chunk });
 });
 
-/** GET /api/search?q=314159 */
 app.get('/api/search', (req, res) => {
   if (!ready) return res.status(503).json({ error: 'Calculando π…', ready: false });
-
   const q = (req.query.q || '').replace(/\D/g, '');
   if (!q)            return res.status(400).json({ error: 'Parámetro q requerido' });
   if (q.length > 20) return res.status(400).json({ error: 'q: máx 20 dígitos' });
-
   const rStart = Math.max(0, parseInt(req.query.start || '0', 10));
   const rCount = Math.min(currentMax, Math.max(1, parseInt(req.query.count || String(currentMax), 10)));
   const rEnd   = Math.min(currentMax, rStart + rCount);
-
   const decimals  = PI_STR.slice(1);
   const positions = [];
   let idx = rStart;
-
   while (idx < rEnd) {
     idx = decimals.indexOf(q, idx);
     if (idx === -1 || idx >= rEnd) break;
@@ -200,7 +252,6 @@ app.get('/api/search', (req, res) => {
     idx++;
     if (positions.length >= 10_000) break;
   }
-
   res.json({
     query: q, start: rStart, end: rEnd,
     totalFound: positions.length, positions,
@@ -208,25 +259,31 @@ app.get('/api/search', (req, res) => {
   });
 });
 
-/**
- * POST /api/expand
- * Amplía π en EXPAND_STEP decimales más.
- * Devuelve inmediatamente con { accepted, newTarget } y calcula en background.
- * El cliente puede hacer polling a /api/status para saber cuándo termina.
- */
 app.post('/api/expand', (req, res) => {
   if (!ready)    return res.status(503).json({ error: 'Aún calculando el bloque inicial…' });
   if (expanding) return res.status(409).json({ error: 'Ya hay una expansión en curso', currentMax });
-
   const newTarget = currentMax + EXPAND_STEP;
   if (newTarget > HARD_LIMIT_SAFE)
-    return res.status(400).json({ error: `Límite según RAM disponible: ${HARD_LIMIT_SAFE.toLocaleString('es')} decimales (${RAM_TOTAL_GB.toFixed(1)} GB RAM total)`, hardLimit: HARD_LIMIT_SAFE });
-
-  // Responder inmediatamente — el cálculo corre en background
+    return res.status(400).json({ error: `Límite según RAM: ${HARD_LIMIT_SAFE.toLocaleString('es')} decimales`, hardLimit: HARD_LIMIT_SAFE });
   res.json({ accepted: true, from: currentMax, newTarget, expandStep: EXPAND_STEP });
-
-  // Lanzar expansión sin await (background)
   expandPi(newTarget).catch(e => console.error('[π] Expansión fallida:', e));
+});
+
+// Endpoint para cargar un caché externo via POST (útil para subir decimales precalculados)
+app.post('/api/cache/load', express.text({ limit: '50mb' }), (req, res) => {
+  if (expanding) return res.status(409).json({ error: 'Expansión en curso' });
+  const data = req.body.trim();
+  if (!data.startsWith('3') || data.length < 2)
+    return res.status(400).json({ error: 'Datos inválidos: deben empezar por 3' });
+  const digits = data.length - 1;
+  if (digits > HARD_LIMIT_SAFE)
+    return res.status(400).json({ error: `Demasiados decimales: límite ${HARD_LIMIT_SAFE.toLocaleString('es')}` });
+  PI_STR     = data;
+  currentMax = digits;
+  ready      = true;
+  loadedFromCache = true;
+  saveCache(PI_STR);
+  res.json({ ok: true, digits, message: `Cargados ${digits.toLocaleString('es')} decimales` });
 });
 
 // ═══════════════════════════════════════════════════════════
