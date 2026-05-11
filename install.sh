@@ -21,7 +21,7 @@ echo ""
 # ── 1. Crear directorio del caché ─────────────────────────
 echo "→ Creando directorio de caché: $CACHE_DIR"
 sudo mkdir -p "$CACHE_DIR"
-sudo chown -R "$(whoami):$(whoami)" "$CACHE_DIR"
+sudo chown -R "$(whoami):$(id -gn)" "$CACHE_DIR"
 
 # ── 2. Descargar decimales de π si no existen ─────────────
 if [ -f "$CACHE_FILE" ] && [ "$(wc -c < "$CACHE_FILE")" -gt 1000 ]; then
