@@ -48,6 +48,11 @@ Si ya tienes el fichero descargado en `/tmp/pi-billion.txt`, el script lo detect
 
 ---
 
+### Busca numeros en Pi
+![buscador-pi.png](buscador-pi.png)
+
+---
+
 ## 💾 Caché manual
 
 Si prefieres gestionar el caché manualmente:
