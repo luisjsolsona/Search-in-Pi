@@ -7,7 +7,7 @@
 <p align="center">
   <strong>Buscador de secuencias numéricas en los decimales de π</strong><br>
   Calcula con el algoritmo <strong>Chudnovsky</strong> y soporta caché persistente en disco.<br>
-  Arranca instantáneamente si hay decimales pregenerados disponibles.
+  Arranca instantáneamente con hasta 1.000.000.000 decimales pregenerados.
 </p>
 
 <p align="center">
@@ -17,58 +17,50 @@
 
 ---
 
-## ✨ Características
-
-- **Algoritmo Chudnovsky** con *binary splitting* — el más eficiente implementado en JS puro
-- **Caché persistente en disco**: carga `pi_cache.txt` al arrancar en <1 segundo
-- **Expansión dinámica**: añade 500K decimales en caliente sin reiniciar el contenedor
-- **API REST** para servir los dígitos por bloques (`/api/pi`, `/api/search`)
-- **Búsqueda server-side**: busca en todos los decimales disponibles de una sola vez
-- **Modo standalone**: si se abre sin servidor, calcula localmente con Web Worker + Machin BigInt
-- **Límite dinámico según RAM**: calcula automáticamente cuántos decimales puede manejar el sistema
-- **Responsive**: funciona en móvil, tablet y escritorio
-
----
-
-## 🚀 Despliegue rápido
+## 🚀 Instalación en un comando
 
 ```bash
 git clone https://github.com/luisjsolsona/Search-in-Pi.git
 cd Search-in-Pi
-docker compose up -d
+bash install.sh
 ```
 
-Abre `http://TU_IP:3141` en el navegador.
+El script hace todo automáticamente:
+
+1. Descarga **1.000.000.000 decimales de π** desde el MIT (`pi-billion.txt`)
+2. Genera el caché en `/DATA/AppData/search-in-pi/data/pi_cache.txt`
+3. Construye y arranca el contenedor Docker
+4. Verifica que el servidor esté listo
+
+Si ya tienes el fichero descargado en `/tmp/pi-billion.txt`, el script lo detecta y se salta la descarga.
 
 ---
 
-## 💾 Caché de decimales pregenerados
+## ✨ Características
 
-El sistema puede arrancar instantáneamente si dispones de un fichero de decimales de π en disco.
+- **Caché persistente en disco**: carga 1.000.000.000 decimales al arrancar en <1 segundo
+- **Algoritmo Chudnovsky** con *binary splitting* — el más eficiente implementado en JS puro
+- **Expansión dinámica**: añade 500K decimales en caliente sin reiniciar el contenedor
+- **Límite dinámico según RAM**: calcula automáticamente cuántos decimales puede manejar
+- **Búsqueda server-side**: busca en todos los decimales disponibles de una sola vez
+- **Modo standalone**: si se abre sin servidor, calcula localmente con Web Worker + Machin BigInt
+- **Responsive**: funciona en móvil, tablet y escritorio
 
-### Formato del fichero
+---
 
-Un fichero de texto plano que empiece por `3` seguido de todos los decimales **sin punto ni espacios**:
+## 💾 Caché manual
 
-```
-314159265358979323846264338327950288...
-```
-
-### Usando pi-billion.txt (MIT)
+Si prefieres gestionar el caché manualmente:
 
 ```bash
-# Descargar ~1GB de decimales de π
-wget -O /tmp/pi-billion.txt https://stuff.mit.edu/afs/sipb/contrib/pi/pi-billion.txt
-
-# Crear directorio del caché
+# Crear directorio
 mkdir -p /DATA/AppData/search-in-pi/data
 
 # Limpiar formato (quitar el punto decimal) y guardar
 tr -d '.\n\r ' < /tmp/pi-billion.txt > /DATA/AppData/search-in-pi/data/pi_cache.txt
 
-# Verificar que empieza bien
-head -c 30 /DATA/AppData/search-in-pi/data/pi_cache.txt
-# → 314159265358979323846264338327...
+# Arrancar
+docker compose up -d --build
 ```
 
 ### Cargar en caliente (sin reiniciar)
@@ -112,12 +104,13 @@ El modo standalone (sin servidor) usa la fórmula de **Machin**:
 ```
 Search-in-Pi/
 ├── src/
-│   └── server.js          # Servidor Express + Chudnovsky + sistema de caché
+│   └── server.js          # Servidor Express + Chudnovsky + caché
 ├── public/
 │   ├── index.html         # Frontend responsive
 │   └── icon.svg           # Icono: lupa con π
 ├── Dockerfile             # Multi-stage, imagen Alpine mínima
 ├── docker-compose.yml     # Con volumen persistente para caché
+├── install.sh             # Script de instalación automática
 ├── package.json
 └── README.md
 ```
