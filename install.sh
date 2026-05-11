@@ -2,8 +2,6 @@
 # ═══════════════════════════════════════════════════════════
 #  Search-in-Pi — Script de instalación
 #  Uso: bash install.sh
-#
-#  Descarga pi-billion.txt (MIT), genera el caché y arranca.
 # ═══════════════════════════════════════════════════════════
 
 set -e
@@ -22,14 +20,14 @@ echo ""
 
 # ── 1. Crear directorio del caché ─────────────────────────
 echo "→ Creando directorio de caché: $CACHE_DIR"
-mkdir -p "$CACHE_DIR"
+sudo mkdir -p "$CACHE_DIR"
+sudo chown -R "$(whoami):$(whoami)" "$CACHE_DIR"
 
 # ── 2. Descargar decimales de π si no existen ─────────────
 if [ -f "$CACHE_FILE" ] && [ "$(wc -c < "$CACHE_FILE")" -gt 1000 ]; then
   DIGITS=$(( $(wc -c < "$CACHE_FILE") - 1 ))
   echo "→ Caché ya existe con $DIGITS decimales. Saltando descarga."
 else
-  # Comprobar si ya está descargado en /tmp
   if [ -f "$PI_TMP" ] && [ "$(wc -c < "$PI_TMP")" -gt 1000000 ]; then
     echo "→ Usando fichero ya descargado: $PI_TMP"
   else
@@ -44,13 +42,11 @@ else
   DIGITS=$(( $(wc -c < "$CACHE_FILE") - 1 ))
   echo "→ Caché generado: $DIGITS decimales → $CACHE_FILE"
 
-  # Verificar los primeros dígitos
   FIRST=$(head -c 15 "$CACHE_FILE")
   if [[ "$FIRST" == 314159265358979* ]]; then
     echo "→ Verificación OK: $FIRST..."
   else
     echo "⚠️  Verificación fallida. Primeros caracteres: $FIRST"
-    echo "   Revisa el fichero manualmente."
     exit 1
   fi
 fi
@@ -65,7 +61,6 @@ echo ""
 echo "→ Esperando a que el servidor esté listo..."
 sleep 3
 
-# Polling hasta que ready=true
 for i in $(seq 1 30); do
   STATUS=$(curl -s http://localhost:3141/api/status 2>/dev/null || echo "{}")
   READY=$(echo "$STATUS" | grep -o '"ready":true' || true)
