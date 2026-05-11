@@ -29,7 +29,9 @@ const EXPAND_STEP = 500_000;
 const os = require('os');
 const RAM_TOTAL_GB  = os.totalmem() / (1024 ** 3);
 const HARD_LIMIT    = Math.floor(RAM_TOTAL_GB * 1_000_000 / 20) * 1_000;
-const HARD_LIMIT_SAFE = Math.max(1_000_000, Math.min(1_000_000_000, HARD_LIMIT));
+// Límite de string en V8: ~536M caracteres. Usamos 500M como tope seguro.
+const V8_STRING_LIMIT = 500_000_000;
+const HARD_LIMIT_SAFE = Math.max(1_000_000, Math.min(V8_STRING_LIMIT, HARD_LIMIT));
 
 // ═══════════════════════════════════════════════════════════
 //  ALGORITMO CHUDNOVSKY + BINARY SPLITTING (BigInt)
@@ -110,7 +112,13 @@ function loadCache() {
       data = data.replace(/\D/g, '');
       if (!data.startsWith('3')) data = '3' + data;
     }
-    const digits = data.length - 1;
+    let digits = data.length - 1;
+    // Truncar si excede el límite de string de V8 (~500M)
+    if (data.length > V8_STRING_LIMIT) {
+      console.log(`[π] Caché tiene ${digits.toLocaleString('es')} decimales, truncando a ${V8_STRING_LIMIT.toLocaleString('es')} (límite V8)…`);
+      data = data.slice(0, V8_STRING_LIMIT);
+      digits = data.length - 1;
+    }
     console.log(`[π] Caché encontrado: ${digits.toLocaleString('es')} decimales`);
     return data;
   } catch (e) {

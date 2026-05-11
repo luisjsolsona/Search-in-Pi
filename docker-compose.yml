@@ -21,6 +21,8 @@ services:
       # Ruta del caché dentro del contenedor (mapeada al volumen abajo)
       - PI_CACHE_PATH=/data/pi_cache.txt
 
+    user: "${UID:-1000}:${GID:-1000}"
+
     volumes:
       # Volumen persistente para el caché de π
       # En CasaOS: /DATA/AppData/search-in-pi/data → /data
