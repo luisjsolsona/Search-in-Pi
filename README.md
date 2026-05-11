@@ -53,37 +53,14 @@ Si ya tienes el fichero descargado en `/tmp/pi-billion.txt`, el script lo detect
 
 ---
 
-## 💾 Caché manual
+## 🌐 Fuentes de decimales de π
 
-Si prefieres gestionar el caché manualmente:
+Puedes consultar y descargar decimales de π desde estas webs:
 
-```bash
-# Crear directorio
-mkdir -p /DATA/AppData/search-in-pi/data
+- **[MIT SIPB Pi files](https://stuff.mit.edu/afs/sipb/contrib/pi/)** — colección de ficheros con millones y miles de millones de dígitos
+- **[Pi2e.ch](https://pi2e.ch/blog/2017/03/10/pi-digits-download/)** — descarga directa de hasta 100 millones de dígitos en varios formatos
 
-# Limpiar formato (quitar el punto decimal) y guardar
-tr -d '.\n\r ' < /tmp/pi-billion.txt > /DATA/AppData/search-in-pi/data/pi_cache.txt
-
-# Arrancar
-docker compose up -d --build
-```
-
-### Cargar en caliente (sin reiniciar)
-
-```bash
-curl -X POST http://TU_IP:3141/api/cache/load \
-  -H "Content-Type: text/plain" \
-  --data-binary @/ruta/al/pi_cache.txt
-```
-
-### Variables de entorno
-
-| Variable | Por defecto | Descripción |
-|---|---|---|
-| `PORT` | `3141` | Puerto del servidor HTTP |
-| `MAX_DIGITS` | `1000000` | Decimales a calcular si no hay caché |
-| `PI_CACHE_PATH` | `/data/pi_cache.txt` | Ruta del fichero de caché |
-| `NODE_ENV` | `production` | Modo de Node.js |
+El script `install.sh` usa automáticamente el fichero `pi-billion.txt` del MIT.
 
 ---
 
