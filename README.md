@@ -59,6 +59,7 @@ Puedes consultar y descargar decimales de π desde estas webs:
 
 - **[MIT SIPB Pi files](https://stuff.mit.edu/afs/sipb/contrib/pi/)** — colección de ficheros con millones y miles de millones de dígitos
 - **[Pi2e.ch](https://pi2e.ch/blog/2017/03/10/pi-digits-download/)** — descarga directa de hasta 100 millones de dígitos en varios formatos
+- **[Angio.net Pi Search](https://www.angio.net/pi/bigpi.cgi)** — buscador online de secuencias en los primeros 200 millones de dígitos de π
 
 El script `install.sh` usa automáticamente el fichero `pi-billion.txt` del MIT.
 
