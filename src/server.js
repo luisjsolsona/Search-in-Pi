@@ -94,32 +94,42 @@ function saveCache(piStr) {
 function loadCache() {
   try {
     if (!fs.existsSync(CACHE_PATH)) return null;
-    console.log(`[π] Leyendo caché desde ${CACHE_PATH}…`);
-    let data = fs.readFileSync(CACHE_PATH, 'utf8');
-    // Limpiar: quitar punto decimal, espacios, saltos de línea
-    // Soporta formato "3.14159..." (pi-billion.txt) y "314159..." (sin punto)
-    data = data.replace(/\s/g, '');          // quitar whitespace
-    if (data.startsWith('3.')) {
-      data = '3' + data.slice(2);            // "3.14159..." → "314159..."
-    }
+    const stat = fs.statSync(CACHE_PATH);
+    console.log(`[π] Leyendo caché desde ${CACHE_PATH} (${(stat.size / 1e6).toFixed(0)} MB)…`);
+
+    // Leer solo los primeros V8_STRING_LIMIT bytes para no reventar el heap
+    const bytesToRead = Math.min(stat.size, V8_STRING_LIMIT);
+    const buf = Buffer.allocUnsafe(bytesToRead);
+    const fd  = fs.openSync(CACHE_PATH, 'r');
+    fs.readSync(fd, buf, 0, bytesToRead, 0);
+    fs.closeSync(fd);
+
+    let data = buf.toString('utf8');
+
+    // Limpiar: quitar punto decimal y whitespace
+    data = data.replace(/\s/g, '');
+    if (data.startsWith('3.')) data = '3' + data.slice(2);
+
     if (!data.startsWith('3') || data.length < 2) {
       console.warn('[π] Caché inválido: no empieza por 3');
       return null;
     }
-    // Verificar que son solo dígitos
-    if (!/^\d+$/.test(data)) {
-      console.warn('[π] Caché contiene caracteres no numéricos, limpiando…');
+
+    // Eliminar cualquier carácter no numérico residual
+    if (!/^\d+$/.test(data.slice(0, 100))) {
       data = data.replace(/\D/g, '');
       if (!data.startsWith('3')) data = '3' + data;
     }
-    let digits = data.length - 1;
-    // Truncar si excede el límite de string de V8 (~500M)
-    if (data.length > V8_STRING_LIMIT) {
-      console.log(`[π] Caché tiene ${digits.toLocaleString('es')} decimales, truncando a ${V8_STRING_LIMIT.toLocaleString('es')} (límite V8)…`);
-      data = data.slice(0, V8_STRING_LIMIT);
-      digits = data.length - 1;
+
+    // Truncar al límite exacto
+    if (data.length > V8_STRING_LIMIT) data = data.slice(0, V8_STRING_LIMIT);
+
+    const digits = data.length - 1;
+    if (stat.size > V8_STRING_LIMIT) {
+      console.log(`[π] Fichero truncado a ${digits.toLocaleString('es')} decimales (límite V8 ~500M)`);
+    } else {
+      console.log(`[π] Caché encontrado: ${digits.toLocaleString('es')} decimales`);
     }
-    console.log(`[π] Caché encontrado: ${digits.toLocaleString('es')} decimales`);
     return data;
   } catch (e) {
     console.warn(`[π] No se pudo leer el caché: ${e.message}`);
